@@ -1,3 +1,4 @@
+
 <?php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -15,10 +16,21 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/404', [HomeController::class, 'notFound'])->name('404');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 // Authentication routes
-Route::get('/login', function () {
-	return view('auth.login');
-})->name('login');
+use App\Http\Controllers\Auth\LoginController;
 
-Route::get('/register', function () {
-	return view('auth.register');
-})->name('register');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.submit');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/dashboard', function () {
+	return view('dashboard');
+})->middleware('auth')->name('dashboard');
+
+use App\Http\Controllers\Auth\RegisterController;
+
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.submit');
+// Profile Edit Route
+Route::get('/profile/edit', function () {
+	return view('profile.edit');
+})->middleware('auth')->name('profile.edit');
