@@ -22,6 +22,9 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Sign In</button>
                     </form>
+                    <div class="mb-3 text-end">
+                        <a href="{{ route('password.request') }}">Mot de passe oublié&nbsp;?</a>
+                    </div>
                 </div>
             </div>
         </div>

@@ -114,8 +114,18 @@
                         <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                     </div>
                         <div class="d-none d-lg-flex ms-auto">
-                            <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
-                            <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+                            @auth
+                                <button class="btn btn-dark ms-2" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                    <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
+                                </button>
+                                <form method="POST" action="{{ route('logout') }}" style="display:inline; margin-left: 8px;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-light">Déconnexion</button>
+                                </form>
+                            @else
+                                <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
+                                <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+                            @endauth
                         </div>
                 </div>
             </nav>
@@ -214,5 +224,40 @@
     <script src="{{ asset('js/main.js') }}"></script>
 
     @yield('scripts')
+
+    @auth
+    Bonjour, {{ Auth::user()->name }} |
+    <form method="POST" action="{{ route('logout') }}" style="display:inline">
+        @csrf
+        <button type="submit">Déconnexion</button>
+    </form>
+@endauth
+
+@guest
+    <a href="{{ route('login') }}">Connexion</a>
+@endguest
+
+<!-- Modal Profil Utilisateur -->
+@auth
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileModalLabel">Profil utilisateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Nom :</strong> {{ Auth::user()->name }}</p>
+        <p><strong>Email :</strong> {{ Auth::user()->email }}</p>
+        <!-- Ajoute d'autres infos si besoin -->
+      </div>
+      <div class="modal-footer">
+        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Éditer le profil</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endauth
 </body>
 </html>
