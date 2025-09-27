@@ -31,6 +31,12 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Sign In</button>
                     </form>
+                    <script>
+                        document.querySelector('form').addEventListener('submit', function(e) {
+                            var token = document.querySelector('input[name="_token"]').value;
+                            console.log('Login form submitted. CSRF token:', token);
+                        });
+                    </script>
                 </div>
             </div>
         </div>
