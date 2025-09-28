@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WasteController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -50,7 +51,6 @@ Route::middleware('guest')->group(function () {
                 return redirect()->route('verification.notice')->withErrors(['email' => 'You must verify your email before logging in.']);
             }
             Auth::login($user);
-            return redirect()->intended('/dashboard');
         }
         return back()->withErrors(['email' => 'The provided credentials are incorrect.']);
     })->name('login');
@@ -59,6 +59,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
     // Add other protected routes here
+    Route::resource('wastes', WasteController::class);
 });
 
 Route::middleware('auth')->group(function () {
@@ -70,7 +71,6 @@ Route::middleware('auth')->group(function () {
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
-
 Route::get('/email/verify/{id}/{hash}', function ($id, $hash, Illuminate\Http\Request $request) {
     $user = User::findOrFail($id);
     if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
