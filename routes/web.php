@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
@@ -89,4 +90,4 @@ Route::post('/email/verification-notification', function (Request $request) {
     return back()->with('resent', true);
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-require __DIR__.'/custom_register.php';
+require __DIR__ . '/custom_register.php';
