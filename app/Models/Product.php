@@ -9,6 +9,12 @@ class Product extends Model
 {
     use HasFactory;
 
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+    use HasFactory;
+
     protected $fillable = [
         'waste_id',
         'nom',
