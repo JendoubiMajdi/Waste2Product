@@ -4,6 +4,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WasteController;
+use App\Http\Controllers\ProductController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -60,6 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
     // Add other protected routes here
     Route::resource('wastes', WasteController::class);
+    Route::resource('products', ProductController::class);
 });
 
 Route::middleware('auth')->group(function () {
