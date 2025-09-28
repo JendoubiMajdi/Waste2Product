@@ -15,6 +15,7 @@ class Product extends Model
         'description',
         'etat',
         'prix',
+        'quantite',
     ];
 
     public function waste()

@@ -34,6 +34,7 @@ class ProductController extends Controller
             'description' => 'required|string',
             'etat' => 'required|in:recyclé,non recyclé',
             'prix' => 'required|numeric|min:100',
+            'quantite' => 'required|integer|min:0',
         ]);
 
         // Ownership check: selected waste must belong to current user
@@ -76,6 +77,7 @@ class ProductController extends Controller
             'description' => 'required|string',
             'etat' => 'required|in:recyclé,non recyclé',
             'prix' => 'required|numeric|min:100',
+            'quantite' => 'required|integer|min:0',
         ]);
 
         // Ownership check for selected waste

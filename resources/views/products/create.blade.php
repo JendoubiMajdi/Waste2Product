@@ -55,6 +55,11 @@
                     <input type="number" step="0.01" min="100" name="prix" class="form-control" value="{{ old('prix') }}" required>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">Quantité disponible</label>
+                    <input type="number" step="1" min="0" name="quantite" class="form-control" value="{{ old('quantite', 0) }}" required>
+                </div>
+
                 <div class="d-flex justify-content-end gap-2">
                     <a href="{{ route('products.index') }}" class="btn btn-secondary">Cancel</a>
                     <button type="submit" class="btn btn-primary">Save</button>

@@ -30,6 +30,9 @@
                 <dt class="col-sm-3">Prix</dt>
                 <dd class="col-sm-9">{{ $product->prix }}</dd>
 
+                <dt class="col-sm-3">Quantité</dt>
+                <dd class="col-sm-9">{{ $product->quantite }}</dd>
+
                 <dt class="col-sm-3">Created At</dt>
                 <dd class="col-sm-9">{{ $product->created_at }}</dd>
 

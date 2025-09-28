@@ -24,6 +24,7 @@
                             <th>Description</th>
                             <th>État</th>
                             <th>Prix</th>
+                            <th>Quantité</th>
                             <th>Waste</th>
                             <th class="text-end">Actions</th>
                         </tr>
@@ -36,6 +37,7 @@
                                 <td>{{ $product->description }}</td>
                                 <td>{{ $product->etat }}</td>
                                 <td>{{ $product->prix }}</td>
+                                <td>{{ $product->quantite }}</td>
                                 <td>#{{ $product->waste_id }} - {{ $product->waste->type ?? '' }}</td>
                                 <td class="text-end">
                                     <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-outline-secondary">Show</a>
