@@ -30,13 +30,41 @@
             <input type="text" name="statut" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="products">Products</label>
-            <select name="products[]" class="form-control" multiple required>
-                @foreach($products as $product)
-                <option value="{{ $product->id }}">{{ $product->nom }}</option>
-                @endforeach
-            </select>
-            <small>Select one or more products for this order.</small>
+            <label>Products (avec quantités)</label>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Sélectionner</th>
+                            <th>Produit</th>
+                            <th>Stock disponible</th>
+                            <th>Quantité commandée</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($products as $product)
+                        <tr>
+                            <td style="width:120px;">
+                                <input type="checkbox" name="products[]" value="{{ $product->id }}" {{ in_array($product->id, old('products', [])) ? 'checked' : '' }}>
+                            </td>
+                            <td>
+                                #{{ $product->id }} - {{ $product->nom }}
+                            </td>
+                            <td>
+                                {{ $product->quantite }}
+                            </td>
+                            <td style="width:220px;">
+                                <input type="number" name="quantites[{{ $product->id }}]" class="form-control" min="1" max="{{ $product->quantite }}" value="{{ old('quantites.'.$product->id, 1) }}">
+                                @error('quantites.'.$product->id)
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <small>Cochez les produits et indiquez la quantité souhaitée (ne dépasse pas le stock).</small>
         </div>
         <div class="form-group">
             <label for="client_id">Client</label>

@@ -9,12 +9,6 @@ class Product extends Model
 {
     use HasFactory;
 
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
-    use HasFactory;
-
     protected $fillable = [
         'waste_id',
         'nom',
@@ -27,5 +21,12 @@ class Product extends Model
     public function waste()
     {
         return $this->belongsTo(Waste::class);
+    }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_items')
+            ->withPivot('quantite')
+            ->withTimestamps();
     }
 }
