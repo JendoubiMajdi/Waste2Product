@@ -112,6 +112,10 @@
                             </div>
                         </div>
                         <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
+                        @auth
+                        <a href="{{ route('wastes.index') }}" class="nav-item nav-link {{ request()->routeIs('wastes.*') ? 'active' : '' }}">Wastes</a>
+                        <a href="{{ route('products.index') }}" class="nav-item nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">Products</a>
+                        @endauth
                     </div>
                         <div class="d-none d-lg-flex ms-auto">
                             @auth
