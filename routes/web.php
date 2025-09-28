@@ -6,6 +6,8 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WasteController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\LivraisonController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -25,6 +27,9 @@ Route::get('/testimonial', [HomeController::class, 'testimonial'])->name('testim
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/404', [HomeController::class, 'notFound'])->name('404');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+
+// Order routes
+Route::resource('orders', OrderController::class);
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
@@ -63,6 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Add other protected routes here
     Route::resource('wastes', WasteController::class);
     Route::resource('products', ProductController::class);
+    Route::resource('livraisons', LivraisonController::class);
 });
 
 Route::middleware('auth')->group(function () {
