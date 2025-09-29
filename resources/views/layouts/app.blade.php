@@ -23,8 +23,12 @@
     <link href="{{ asset('lib/animate/animate.min.css') }}" rel="stylesheet">
     <link href="{{ asset('lib/owlcarousel/assets/owl.carousel.min.css') }}" rel="stylesheet">
 
+
     <!-- Customized Bootstrap Stylesheet -->
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- Modern Theme Color Palette -->
+    <link href="{{ asset('css/modern-theme.css') }}" rel="stylesheet">
 
     <!-- Template Stylesheet -->
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
@@ -99,8 +103,9 @@
                     <div class="navbar-nav me-auto">
                         <a href="{{ route('home') }}" class="nav-item nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                         <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
-                        <a href="{{ route('services') }}" class="nav-item nav-link {{ request()->routeIs('services') ? 'active' : '' }}">Service</a>
+                        <a href="{{ route('services') }}" class="nav-item nav-link {{ request()->routeIs('services') ? 'active' : '' }}">Collection Points</a>
                         <a href="{{ route('donation') }}" class="nav-item nav-link {{ request()->routeIs('donation') ? 'active' : '' }}">Donation</a>
+                        <a href="{{ route('orders.index') }}" class="nav-item nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">Orders</a>
                         <div class="nav-item dropdown">
                             <a href="#!" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu bg-light m-0">
@@ -112,10 +117,24 @@
                             </div>
                         </div>
                         <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
+                        @auth
+                        <a href="{{ route('wastes.index') }}" class="nav-item nav-link {{ request()->routeIs('wastes.*') ? 'active' : '' }}">Wastes</a>
+                        <a href="{{ route('products.index') }}" class="nav-item nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}">Products</a>
+                        @endauth
                     </div>
                         <div class="d-none d-lg-flex ms-auto">
-                            <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
-                            <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+                            @auth
+                                <button class="btn btn-dark ms-2" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                    <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
+                                </button>
+                                <form method="POST" action="{{ route('logout') }}" style="display:inline; margin-left: 8px;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-light">Déconnexion</button>
+                                </form>
+                            @else
+                                <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
+                                <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+                            @endauth
                         </div>
                 </div>
             </nav>
@@ -214,5 +233,40 @@
     <script src="{{ asset('js/main.js') }}"></script>
 
     @yield('scripts')
+
+    @auth
+    Bonjour, {{ Auth::user()->name }} |
+    <form method="POST" action="{{ route('logout') }}" style="display:inline">
+        @csrf
+        <button type="submit">Déconnexion</button>
+    </form>
+@endauth
+
+@guest
+    <a href="{{ route('login') }}">Connexion</a>
+@endguest
+
+<!-- Modal Profil Utilisateur -->
+@auth
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="profileModalLabel">Profil utilisateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Nom :</strong> {{ Auth::user()->name }}</p>
+        <p><strong>Email :</strong> {{ Auth::user()->email }}</p>
+        <!-- Ajoute d'autres infos si besoin -->
+      </div>
+      <div class="modal-footer">
+        <a href="{{ route('profile.edit') }}" class="btn btn-primary">Éditer le profil</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+@endauth
 </body>
 </html>

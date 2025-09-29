@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Services')
+@section('title', 'Collection Points')
 @section('content')
 <div class="container py-5">
     <h2>Available Collection Points</h2>
