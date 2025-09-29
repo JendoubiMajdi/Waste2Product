@@ -100,10 +100,23 @@
                         <a href="{{ route('home') }}" class="nav-item nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Home</a>
                         <a href="{{ route('about') }}" class="nav-item nav-link {{ request()->routeIs('about') ? 'active' : '' }}">About</a>
                         <a href="{{ route('services') }}" class="nav-item nav-link {{ request()->routeIs('services') ? 'active' : '' }}">Service</a>
-                        <a href="{{ route('donation') }}" class="nav-item nav-link {{ request()->routeIs('donation') ? 'active' : '' }}">Donation</a>
+                        @auth
+                            <a href="{{ route('don.form') }}" class="nav-item nav-link {{ request()->routeIs('don.form') ? 'active' : '' }}">Donate</a>
+                        @else
+                            <a href="{{ route('donation') }}" class="nav-item nav-link {{ request()->routeIs('donation') ? 'active' : '' }}">Donation</a>
+                        @endauth
                         <div class="nav-item dropdown">
                             <a href="#!" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu bg-light m-0">
+                                @auth
+                                    <a href="{{ route('forum.feed') }}" class="dropdown-item">
+                                        <i class="bi bi-chat-dots me-2"></i>Feed
+                                    </a>
+                                    <a href="{{ route('forum.feed') }}#create-post" class="dropdown-item">
+                                        <i class="bi bi-plus-circle me-2"></i>Create Post
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                @endauth
                                 <a href="{{ route('event') }}" class="dropdown-item">Event</a>
                                 <a href="{{ route('feature') }}" class="dropdown-item">Feature</a>
                                 <a href="{{ route('team') }}" class="dropdown-item">Our Team</a>
@@ -113,9 +126,26 @@
                         </div>
                         <a href="{{ route('contact') }}" class="nav-item nav-link {{ request()->routeIs('contact') ? 'active' : '' }}">Contact</a>
                     </div>
+<<<<<<< Updated upstream
                         <div class="d-none d-lg-flex ms-auto">
                             <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
                             <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+=======
+                        <div class="d-none d-lg-flex ms-auto align-items-center">
+                            @auth
+                                @livewire('notification-dropdown')
+                                <button class="btn btn-dark ms-2" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                    <i class="bi bi-person-circle"></i> {{ Auth::user()->name }}
+                                </button>
+                                <form method="POST" action="{{ route('logout') }}" style="display:inline; margin-left: 8px;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline-light">Déconnexion</button>
+                                </form>
+                            @else
+                                <a class="btn btn-dark ms-2" href="{{ route('login') }}">Sign In</a>
+                                <a class="btn btn-primary ms-2" href="{{ route('register') }}">Sign Up</a>
+                            @endauth
+>>>>>>> Stashed changes
                         </div>
                 </div>
             </nav>

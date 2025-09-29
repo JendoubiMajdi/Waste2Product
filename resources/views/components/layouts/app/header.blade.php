@@ -17,6 +17,9 @@
                 </flux:navbar.item>
             </flux:navbar>
 
+            <flux:navbar.item icon="gift" :href="route('don.form')" wire:navigate>Donate</flux:navbar.item>
+            <flux:navbar.item icon="forum" :href="route('forum.feed')" wire:navigate>Forum Feed</flux:navbar.item>
+
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">

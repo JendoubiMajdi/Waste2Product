@@ -175,6 +175,7 @@
                     <h1 class="display-6 mb-4">Subscribe the Newsletter</h1>
                     <form action="{{ route('newsletter.subscribe') }}" method="POST">
                         @csrf
+                        @csrf
                         <div class="position-relative w-100 mb-2">
                             <input class="form-control border-0 w-100 ps-4 pe-5" type="email" name="email" placeholder="Enter Your Email" style="height: 60px;" required>
                             <button type="submit" class="btn btn-lg-square shadow-none position-absolute top-0 end-0 mt-2 me-2"><i class="fa fa-paper-plane text-primary fs-4"></i></button>
