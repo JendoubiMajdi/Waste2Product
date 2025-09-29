@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Actions\Auth\ResetsUserPasswords;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Contracts\ResetsUserPasswords as ResetsUserPasswordsContract;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(ResetsUserPasswordsContract::class, ResetsUserPasswords::class);
+        // Suppression du binding Fortify reset password (non compatible)
     }
 
     /**

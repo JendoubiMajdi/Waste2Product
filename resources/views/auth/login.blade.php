@@ -10,6 +10,11 @@
                     <h4>Sign In</h4>
                 </div>
                 <div class="card-body">
+                    @if(session('registration_success'))
+                        <div class="alert alert-success mt-3">
+                            Registration successful! Please check your email for a verification code before logging in.
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="mb-3">
@@ -22,6 +27,9 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Sign In</button>
                     </form>
+                    <div class="mb-3 text-end">
+                        <a href="{{ route('password.request') }}">Mot de passe oublié&nbsp;?</a>
+                    </div>
                 </div>
             </div>
         </div>
