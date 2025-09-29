@@ -23,23 +23,32 @@
                 @method('PUT')
 
                 <div class="mb-3">
-                    <label class="form-label">Type</label>
-                    <input type="text" name="type" class="form-control" value="{{ old('type', $waste->type) }}" required>
+                    <label for="type" class="form-label">Type</label>
+                    <input type="text" name="type" id="type" class="form-control" value="{{ old('type', $waste->type) }}" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Quantité</label>
-                    <input type="number" step="0.01" min="10" name="quantite" class="form-control" value="{{ old('quantite', $waste->quantite) }}" required>
+                    <label for="quantite" class="form-label">Quantité</label>
+                    <input type="number" step="0.01" min="10" name="quantite" id="quantite" class="form-control" value="{{ old('quantite', $waste->quantite) }}" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Date dépôt</label>
-                    <input type="date" name="dateDepot" class="form-control" value="{{ old('dateDepot', \Illuminate\Support\Carbon::parse($waste->dateDepot)->format('Y-m-d')) }}" min="{{ \Illuminate\Support\Carbon::tomorrow()->format('Y-m-d') }}" required>
+                    <label for="dateDepot" class="form-label">Date dépôt</label>
+                    <input type="date" name="dateDepot" id="dateDepot" class="form-control" value="{{ old('dateDepot', \Illuminate\Support\Carbon::parse($waste->dateDepot)->format('Y-m-d')) }}" min="{{ \Illuminate\Support\Carbon::tomorrow()->format('Y-m-d') }}" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Localisation</label>
-                    <input type="text" name="localisation" class="form-control" value="{{ old('localisation', $waste->localisation) }}" required>
+                    <label for="localisation" class="form-label">Localisation</label>
+                    <input type="text" name="localisation" id="localisation" class="form-control" value="{{ old('localisation', $waste->localisation) }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="collection_point_id" class="form-label">Collection Point</label>
+                    <select name="collection_point_id" id="collection_point_id" class="form-control" required>
+                        @foreach($collectionPoints as $point)
+                            <option value="{{ $point->id }}" @if($waste->collection_point_id == $point->id) selected @endif>{{ $point->name }} - {{ $point->address }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">

@@ -12,10 +12,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Verified;
 use App\Models\User;
+use App\Http\Controllers\CollectionPointController;
+
+Route::get('/collection-points', [CollectionPointController::class, 'index'])->name('collection_points.list');
+Route::resource('collection_points', CollectionPointController::class)->middleware('auth');
+Route::get('/my-collection-points', [CollectionPointController::class, 'dashboard'])->middleware('auth')->name('collection_points.dashboard');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
-Route::get('/services', [HomeController::class, 'services'])->name('services');
+Route::get('/services', [CollectionPointController::class, 'index'])->name('services');
 Route::get('/donation', [HomeController::class, 'donation'])->name('donation');
 Route::get('/event', [HomeController::class, 'event'])->name('event');
 Route::get('/feature', [HomeController::class, 'feature'])->name('feature');
@@ -40,27 +45,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('password.update');
-
-    Route::post('/login', function (Illuminate\Http\Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-        $user = \App\Models\User::where('email', $request->email)->first();
-        if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
-            if (!$user->hasVerifiedEmail()) {
-                return redirect()->route('verification.notice')->withErrors(['email' => 'You must verify your email before logging in.']);
-            }
-            Auth::login($user);
-        }
-        return back()->withErrors(['email' => 'The provided credentials are incorrect.']);
-    })->name('login');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
     // Add other protected routes here
-    Route::resource('wastes', WasteController::class);
+    Route::resource('wastes', App\Http\Controllers\WasteController::class);
     Route::resource('products', ProductController::class);
 });
 

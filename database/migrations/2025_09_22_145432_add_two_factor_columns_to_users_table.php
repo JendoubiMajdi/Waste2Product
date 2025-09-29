@@ -16,6 +16,9 @@ return new class extends Migration
             $table->text('two_factor_recovery_codes')->after('two_factor_secret')->nullable();
             $table->timestamp('two_factor_confirmed_at')->after('two_factor_recovery_codes')->nullable();
         });
+        Schema::table('collection_points', function (Blueprint $table) {
+            $table->string('image')->nullable()->after('status');
+        });
     }
 
     /**
@@ -29,6 +32,9 @@ return new class extends Migration
                 'two_factor_recovery_codes',
                 'two_factor_confirmed_at',
             ]);
+        });
+        Schema::table('collection_points', function (Blueprint $table) {
+            $table->dropColumn('image');
         });
     }
 };

@@ -15,6 +15,7 @@ class Waste extends Model
         'dateDepot',
         'localisation',
         'user_id',
+        'collection_point_id',
     ];
 
     public function user()
@@ -25,5 +26,10 @@ class Waste extends Model
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function collectionPoint()
+    {
+        return $this->belongsTo(CollectionPoint::class);
     }
 }

@@ -41,9 +41,18 @@
                     <input type="text" name="localisation" class="form-control" value="{{ old('localisation') }}" required>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">Point de collecte</label>
+                    <select name="collection_point_id" class="form-control" required>
+                        @foreach($collectionPoints as $point)
+                            <option value="{{ $point->id }}">{{ $point->name }} - {{ $point->address }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('wastes.index') }}" class="btn btn-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="{{ route('wastes.index') }}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Déposer</button>
                 </div>
             </form>
         </div>
