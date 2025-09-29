@@ -1,0 +1,78 @@
+/* Modern Teal/Cyan Color Palette for Waste2Product */
+:root {
+  --primary: #06b6d4;
+  --primary-dark: #0e7490;
+  --primary-light: #a5f3fc;
+  --accent: #f59e42;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #facc15;
+  --info: #38bdf8;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+
+.alert-success {
+  background: var(--success);
+  color: #fff;
+}
+.alert-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.alert-warning {
+  background: var(--warning);
+  color: #fff;
+}
+.alert-info {
+  background: var(--info);
+  color: #fff;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.table {
+  background: var(--surface);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table th {
+  background: var(--primary-light);
+  color: var(--text);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background: #e0f2fe;
+}
+
+.text-muted {
+  color: var(--muted);
+}
