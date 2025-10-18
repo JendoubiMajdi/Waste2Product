@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class RedirectIfAuthenticated
+{
+    public function handle(Request $request, Closure $next, ...$guards)
+    {
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                // Redirect admin users to admin dashboard
+                if (Auth::user()->role === 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
+                
+                // Redirect other users to regular home
+                return redirect()->route('home');
+            }
+        }
+
+        return $next($request);
+    }
+}
