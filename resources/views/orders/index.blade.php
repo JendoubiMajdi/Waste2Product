@@ -23,37 +23,39 @@
     @endif
 
     <div class="card">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Client</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($orders as $order)
-            <tr>
-                <td>{{ $order->id }}</td>
-                <td>{{ $order->date }}</td>
-                <td>{{ $order->client ? $order->client->name : '' }}</td>
-                <td>{{ $order->statut }}</td>
-                <td>
-                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-info btn-sm">View</a>
-                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                    <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline-block;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                    <a href="{{ route('livraisons.create', ['idOrder' => $order->id, 'idClient' => $order->client ? $order->client->id : '' ]) }}" class="btn btn-success btn-sm">Ajouter Livraison</a>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($orders as $order)
+                <tr>
+                    <td>{{ $order->id }}</td>
+                    <td>{{ $order->date }}</td>
+                    <td>{{ $order->client ? $order->client->name : '' }}</td>
+                    <td><strong class="text-success">{{ number_format($order->total_amount, 2) }} DT</strong></td>
+                    <td><span class="badge bg-info">{{ $order->statut }}</span></td>
+                    <td>
+                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-info btn-sm">View</a>
+                        <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <form action="{{ route('orders.destroy', $order->id) }}" method="POST" style="display:inline-block;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure? Stock will be restored.')">Delete</button>
+                        </form>
+                        <a href="{{ route('livraisons.create', ['idOrder' => $order->id, 'idClient' => $order->client ? $order->client->id : '' ]) }}" class="btn btn-success btn-sm">Ajouter Livraison</a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 </div>
 @endsection

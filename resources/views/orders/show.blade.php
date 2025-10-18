@@ -24,9 +24,16 @@
     <div class="card mb-3">
         <div class="card-body">
             <h5 class="card-title">Order #{{ $order->id }}</h5>
-            <p class="card-text"><strong>Date:</strong> {{ $order->date }}</p>
-            <p class="card-text"><strong>Status:</strong> {{ $order->statut }}</p>
-            <p class="card-text"><strong>Client:</strong> {{ $order->client ? $order->client->name : '' }}</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="card-text"><strong>Date:</strong> {{ $order->date }}</p>
+                    <p class="card-text"><strong>Status:</strong> <span class="badge bg-info">{{ $order->statut }}</span></p>
+                    <p class="card-text"><strong>Client:</strong> {{ $order->client ? $order->client->name : 'N/A' }}</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <h3 class="text-primary">Total: {{ number_format($order->total_amount, 2) }} DT</h3>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -37,28 +44,38 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Nom</th>
-                            <th>Quantité commandée</th>
+                            <th>Product</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th class="text-end">Subtotal</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($order->products as $product)
                         <tr>
-                            <td>{{ $product->id }}</td>
                             <td>{{ $product->nom }}</td>
+                            <td>{{ number_format($product->pivot->unit_price, 2) }} DT</td>
                             <td>{{ $product->pivot->quantite }}</td>
+                            <td class="text-end"><strong>{{ number_format($product->pivot->subtotal, 2) }} DT</strong></td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" class="text-center">Aucun produit</td>
+                            <td colspan="4" class="text-center">Aucun produit</td>
                         </tr>
                         @endforelse
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                            <td class="text-end"><strong class="text-primary fs-5">{{ number_format($order->total_amount, 2) }} DT</strong></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-            <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning">Edit</a>
-            <a href="{{ route('orders.index') }}" class="btn btn-accent">Back</a>
+            <div class="mt-3">
+                <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning">Edit</a>
+                <a href="{{ route('orders.index') }}" class="btn btn-accent">Back</a>
+            </div>
         </div>
     </div>
 </div>
