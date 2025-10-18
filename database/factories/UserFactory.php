@@ -29,6 +29,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'client',
         ];
     }
 
@@ -40,5 +41,38 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the user has wastes.
+     */
+    public function hasWastes(int $count = 1): static
+    {
+        return $this->has(
+            \App\Models\Waste::factory()->count($count),
+            'wastes'
+        );
+    }
+
+    /**
+     * Indicate that the user has orders as a client.
+     */
+    public function hasClientOrders(int $count = 1): static
+    {
+        return $this->has(
+            \App\Models\Order::factory()->count($count),
+            'clientOrders'
+        );
+    }
+
+    /**
+     * Indicate that the user has orders as a transporter.
+     */
+    public function hasTransporterOrders(int $count = 1): static
+    {
+        return $this->has(
+            \App\Models\Order::factory()->count($count),
+            'transporterOrders'
+        );
     }
 }

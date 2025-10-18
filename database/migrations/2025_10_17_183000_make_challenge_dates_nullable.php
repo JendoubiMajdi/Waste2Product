@@ -18,8 +18,10 @@ return new class extends Migration
             $table->string('goal')->nullable()->change();
         });
 
-        // Update status enum to include 'inactive'
-        DB::statement("ALTER TABLE challenges MODIFY COLUMN status ENUM('upcoming', 'active', 'inactive', 'completed') NOT NULL DEFAULT 'active'");
+        // Update status enum to include 'inactive' (MySQL only)
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE challenges MODIFY COLUMN status ENUM('upcoming', 'active', 'inactive', 'completed') NOT NULL DEFAULT 'active'");
+        }
     }
 
     /**
@@ -33,6 +35,8 @@ return new class extends Migration
             $table->string('goal')->nullable(false)->change();
         });
 
-        DB::statement("ALTER TABLE challenges MODIFY COLUMN status ENUM('upcoming', 'active', 'completed') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE challenges MODIFY COLUMN status ENUM('upcoming', 'active', 'completed') NOT NULL");
+        }
     }
 };
