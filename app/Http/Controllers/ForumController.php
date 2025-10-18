@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Like;
+use App\Models\Post;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +20,7 @@ class ForumController extends Controller
             ->withCount(['comments', 'likes'])
             ->latest()
             ->paginate(10);
-        
+
         return view('forum.index', compact('posts'));
     }
 
@@ -62,6 +62,7 @@ class ForumController extends Controller
     public function show(Post $post)
     {
         $post->load(['user', 'comments.user', 'likes']);
+
         return view('forum.show', compact('post'));
     }
 
@@ -135,7 +136,7 @@ class ForumController extends Controller
      */
     public function destroy(Post $post)
     {
-        if (Auth::id() !== $post->user_id && !Auth::user()->isAdmin()) {
+        if (Auth::id() !== $post->user_id && ! Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized');
         }
 
@@ -150,7 +151,7 @@ class ForumController extends Controller
      */
     public function destroyComment(Comment $comment)
     {
-        if (Auth::id() !== $comment->user_id && !Auth::user()->isAdmin()) {
+        if (Auth::id() !== $comment->user_id && ! Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized');
         }
 

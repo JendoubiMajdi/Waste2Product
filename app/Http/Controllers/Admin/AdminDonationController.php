@@ -15,7 +15,7 @@ class AdminDonationController extends Controller
     {
         $type = $request->input('type');
         $status = $request->input('status');
-        
+
         $donations = Don::with('user')
             ->when($type, function ($query, $type) {
                 return $query->where('type', $type);
@@ -25,7 +25,7 @@ class AdminDonationController extends Controller
             })
             ->latest()
             ->paginate(20);
-        
+
         return view('admin.donations.index', compact('donations', 'type', 'status'));
     }
 

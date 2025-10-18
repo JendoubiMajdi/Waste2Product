@@ -6,7 +6,6 @@ use App\Models\Challenge;
 use App\Models\ChallengeSubmission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class ChallengeController extends Controller
 {
@@ -18,6 +17,7 @@ class ChallengeController extends Controller
         // Choose a deterministic "random" challenge for the day using hashing
         $challenge = Challenge::where('status', 'active')->get()->whenNotEmpty(function ($list) use ($today) {
             $index = hexdec(substr(md5($today), 0, 8)) % $list->count();
+
             return $list->values()[$index];
         }, function () {
             return null;
@@ -43,6 +43,7 @@ class ChallengeController extends Controller
     public function create()
     {
         $this->authorizeAdmin();
+
         return view('challenges.create');
     }
 
@@ -60,13 +61,14 @@ class ChallengeController extends Controller
             'status' => 'required|in:upcoming,active,completed',
         ]);
         Challenge::create($data);
+
         return redirect()->route('challenges.index')->with('success', 'Challenge created.');
     }
 
     // Auth users submit a proof (file or text)
     public function submitProof(Request $request, $challengeId)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
         $challenge = Challenge::findOrFail($challengeId);
@@ -74,7 +76,7 @@ class ChallengeController extends Controller
             'proof_text' => 'nullable|string',
             'proof_image' => 'nullable|image|max:5120',
         ]);
-        $submission = new ChallengeSubmission();
+        $submission = new ChallengeSubmission;
         $submission->challenge_id = $challenge->id;
         $submission->user_id = Auth::id();
         $submission->proof_text = $data['proof_text'] ?? null;
@@ -83,6 +85,7 @@ class ChallengeController extends Controller
         }
         $submission->status = 'pending';
         $submission->save();
+
         return redirect()->route('challenges.index')->with('success', 'Proof submitted, awaiting admin approval.');
     }
 
@@ -95,12 +98,13 @@ class ChallengeController extends Controller
         $submission->approved_by = Auth::id();
         $submission->approved_at = now();
         $submission->save();
+
         return back()->with('success', 'Submission approved.');
     }
 
     protected function authorizeAdmin()
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
             abort(403);
         }
     }

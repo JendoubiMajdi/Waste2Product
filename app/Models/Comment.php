@@ -46,6 +46,7 @@ class Comment extends Model
         if (auth()->check()) {
             return $this->likes()->where('user_id', auth()->id())->where('type', 'like')->exists();
         }
+
         return false;
     }
 }

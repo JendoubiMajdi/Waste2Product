@@ -20,31 +20,36 @@ class CollectionPointController extends Controller
             $point->waste_count = $point->wastes()->count();
             $point->waste_total = $point->wastes()->sum('quantite');
         }
+
         return view('collection_points.dashboard', compact('points'));
     }
+
     public function index()
     {
         $collectionPoints = CollectionPoint::where('status', 'active')->paginate(9);
+
         return view('collection_points.index', compact('collectionPoints'));
     }
 
     public function show($id)
     {
         $point = CollectionPoint::findOrFail($id);
+
         return view('collection_points.show', compact('point'));
     }
 
     public function create()
     {
-        if (!Auth::check() || (Auth::user()->role !== 'collector' && Auth::user()->role !== 'admin')) {
+        if (! Auth::check() || (Auth::user()->role !== 'collector' && Auth::user()->role !== 'admin')) {
             abort(403, 'Only collectors and admins can create collection points.');
         }
+
         return view('collection_points.create');
     }
 
     public function store(Request $request)
     {
-        if (!Auth::check() || (Auth::user()->role !== 'collector' && Auth::user()->role !== 'admin')) {
+        if (! Auth::check() || (Auth::user()->role !== 'collector' && Auth::user()->role !== 'admin')) {
             abort(403, 'Only collectors and admins can create collection points.');
         }
         $validated = $request->validate([
@@ -58,29 +63,31 @@ class CollectionPointController extends Controller
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        
+
         // Combine opening and closing times into working_hours string
         if ($request->filled('opening_time') && $request->filled('closing_time')) {
-            $validated['working_hours'] = $request->opening_time . '-' . $request->closing_time;
+            $validated['working_hours'] = $request->opening_time.'-'.$request->closing_time;
         } else {
             $validated['working_hours'] = null;
         }
-        
+
         // Remove the separate time fields
         unset($validated['opening_time'], $validated['closing_time']);
-        
+
         $validated['user_id'] = Auth::id();
         if ($request->hasFile('image')) {
             $imageData = base64_encode(file_get_contents($request->file('image')->getRealPath()));
             $validated['image'] = $imageData;
         }
         CollectionPoint::create($validated);
+
         return redirect()->route('collection_points.index')->with('success', 'Collection point submitted for admin approval.');
     }
 
     public function edit($id)
     {
         $point = CollectionPoint::findOrFail($id);
+
         return view('collection_points.edit', compact('point'));
     }
 
@@ -97,23 +104,24 @@ class CollectionPointController extends Controller
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        
+
         // Combine opening and closing times into working_hours string
         if ($request->filled('opening_time') && $request->filled('closing_time')) {
-            $validated['working_hours'] = $request->opening_time . '-' . $request->closing_time;
+            $validated['working_hours'] = $request->opening_time.'-'.$request->closing_time;
         } else {
             $validated['working_hours'] = null;
         }
-        
+
         // Remove the separate time fields
         unset($validated['opening_time'], $validated['closing_time']);
-        
+
         $point = CollectionPoint::findOrFail($id);
         if ($request->hasFile('image')) {
             $imageData = base64_encode(file_get_contents($request->file('image')->getRealPath()));
             $validated['image'] = $imageData;
         }
         $point->update($validated);
+
         return redirect()->route('collection_points.index')->with('success', 'Collection point updated successfully.');
     }
 
@@ -121,6 +129,7 @@ class CollectionPointController extends Controller
     {
         $point = CollectionPoint::findOrFail($id);
         $point->delete();
+
         return redirect()->route('collection_points.index');
     }
 

@@ -59,7 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn($word) => Str::substr($word, 0, 1))
+            ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 
@@ -180,7 +180,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getBadgeColorAttribute()
     {
-        return match($this->badge) {
+        return match ($this->badge) {
             'diamond' => 'b9f2ff',
             'platinum' => 'e5e4e2',
             'gold' => 'ffd700',
@@ -196,7 +196,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getBadgeIconAttribute()
     {
-        return match($this->badge) {
+        return match ($this->badge) {
             'diamond' => 'gem',
             'platinum' => 'star-fill',
             'gold' => 'trophy-fill',
@@ -222,7 +222,7 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
 
         $nextThreshold = $thresholds[$this->badge] ?? null;
-        
+
         if ($nextThreshold === null) {
             return 0; // Already at max level
         }

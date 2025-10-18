@@ -21,54 +21,53 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Challenge extends Model
 {
-	use HasFactory;
+    use HasFactory;
 
-	/**
-	 * The table associated with the model.
-	 *
-	 * @var string
-	 */
-	protected $table = 'challenges';
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'challenges';
 
-	/**
-	 * The attributes that are mass assignable.
-	 *
-	 * @var array<int,string>
-	 */
-	protected $fillable = [
-		'title',
-		'description',
-		'start_date',
-		'end_date',
-		'goal',
-		'reward',
-		'status',
-		'points',
-		'image',
-	];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int,string>
+     */
+    protected $fillable = [
+        'title',
+        'description',
+        'start_date',
+        'end_date',
+        'goal',
+        'reward',
+        'status',
+        'points',
+        'image',
+    ];
 
-	/**
-	 * The attributes that should be cast to native types.
-	 *
-	 * @var array<string,string>
-	 */
-	protected $casts = [
-		'start_date' => 'datetime',
-		'end_date' => 'datetime',
-		'goal' => 'integer',
-		'reward' => 'string',
-		'status' => 'string',
-		'points' => 'integer',
-	];
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array<string,string>
+     */
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'goal' => 'integer',
+        'reward' => 'string',
+        'status' => 'string',
+        'points' => 'integer',
+    ];
 
-	/**
-	 * Get submissions for this challenge
-	 */
-	public function submissions()
-	{
-		return $this->hasMany(ChallengeSubmission::class);
-	}
+    /**
+     * Get submissions for this challenge
+     */
+    public function submissions()
+    {
+        return $this->hasMany(ChallengeSubmission::class);
+    }
 
-	// Timestamps are enabled by default (created_at, updated_at)
+    // Timestamps are enabled by default (created_at, updated_at)
 }
-

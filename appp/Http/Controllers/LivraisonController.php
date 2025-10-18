@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-
-use Illuminate\Http\Request;
 use App\Models\Livraison;
+use Illuminate\Http\Request;
 
 class LivraisonController extends Controller
 {
@@ -14,6 +13,7 @@ class LivraisonController extends Controller
     public function index()
     {
         $livraisons = Livraison::all();
+
         return view('livraisons.index', compact('livraisons'));
     }
 
@@ -38,6 +38,7 @@ class LivraisonController extends Controller
             'statut' => 'required|string',
         ]);
         Livraison::create($validated);
+
         return redirect()->route('livraisons.index')->with('success', 'Livraison créée avec succès.');
     }
 
@@ -47,6 +48,7 @@ class LivraisonController extends Controller
     public function show(string $id)
     {
         $livraison = Livraison::findOrFail($id);
+
         return view('livraisons.show', compact('livraison'));
     }
 
@@ -56,6 +58,7 @@ class LivraisonController extends Controller
     public function edit(string $id)
     {
         $livraison = Livraison::findOrFail($id);
+
         return view('livraisons.edit', compact('livraison'));
     }
 
@@ -73,6 +76,7 @@ class LivraisonController extends Controller
             'statut' => 'required|string',
         ]);
         $livraison->update($validated);
+
         return redirect()->route('livraisons.index')->with('success', 'Livraison mise à jour avec succès.');
     }
 
@@ -83,6 +87,7 @@ class LivraisonController extends Controller
     {
         $livraison = Livraison::findOrFail($id);
         $livraison->delete();
+
         return redirect()->route('livraisons.index')->with('success', 'Livraison supprimée avec succès.');
     }
 }

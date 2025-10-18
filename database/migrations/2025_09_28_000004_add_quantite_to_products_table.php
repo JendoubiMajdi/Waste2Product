@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            if (!Schema::hasColumn('products', 'quantite')) {
+            if (! Schema::hasColumn('products', 'quantite')) {
                 $table->unsignedInteger('quantite')->default(0)->after('prix');
             }
         });

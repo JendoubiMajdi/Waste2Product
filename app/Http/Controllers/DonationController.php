@@ -17,7 +17,7 @@ class DonationController extends Controller
             ->where('status', 'approved')
             ->latest()
             ->paginate(12);
-        
+
         return view('donations.index', compact('donations'));
     }
 
@@ -61,6 +61,7 @@ class DonationController extends Controller
     public function show(Don $donation)
     {
         $donation->load('user');
+
         return view('donations.show', compact('donation'));
     }
 
@@ -72,7 +73,7 @@ class DonationController extends Controller
         $donations = Don::where('user_id', Auth::id())
             ->latest()
             ->paginate(10);
-        
+
         return view('donations.my-donations', compact('donations'));
     }
 }

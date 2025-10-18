@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\CollectionPoint;
 use App\Models\User;
-use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class CollectionPointSeeder extends Seeder
 {
@@ -16,8 +15,8 @@ class CollectionPointSeeder extends Seeder
     {
         // Get the first collector user, or create one if none exists
         $collector = User::where('role', 'collector')->first();
-        
-        if (!$collector) {
+
+        if (! $collector) {
             $collector = User::create([
                 'name' => 'System Collector',
                 'email' => 'collector@waste2product.com',

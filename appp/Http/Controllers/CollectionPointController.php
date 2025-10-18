@@ -20,31 +20,36 @@ class CollectionPointController extends Controller
             $point->waste_count = $point->wastes()->count();
             $point->waste_total = $point->wastes()->sum('quantite');
         }
+
         return view('collection_points.dashboard', compact('points'));
     }
+
     public function index()
     {
         $collectionPoints = CollectionPoint::where('status', 'active')->paginate(9);
+
         return view('collection_points.index', compact('collectionPoints'));
     }
 
     public function show($id)
     {
         $point = CollectionPoint::findOrFail($id);
+
         return view('collection_points.show', compact('point'));
     }
 
     public function create()
     {
-        if (!Auth::check() || Auth::user()->role !== 'collector') {
+        if (! Auth::check() || Auth::user()->role !== 'collector') {
             abort(403, 'Only collectors can create collection points.');
         }
+
         return view('collection_points.create');
     }
 
     public function store(Request $request)
     {
-        if (!Auth::check() || Auth::user()->role !== 'collector') {
+        if (! Auth::check() || Auth::user()->role !== 'collector') {
             abort(403, 'Only collectors can create collection points.');
         }
         $validated = $request->validate([
@@ -63,12 +68,14 @@ class CollectionPointController extends Controller
             $validated['image'] = $imageData;
         }
         CollectionPoint::create($validated);
+
         return redirect()->route('collection_points.index')->with('success', 'Collection point submitted for admin approval.');
     }
 
     public function edit($id)
     {
         $point = CollectionPoint::findOrFail($id);
+
         return view('collection_points.edit', compact('point'));
     }
 
@@ -90,6 +97,7 @@ class CollectionPointController extends Controller
             $validated['image'] = $imageData;
         }
         $point->update($validated);
+
         return redirect()->route('collection_points.index')->with('success', 'Collection point updated successfully.');
     }
 
@@ -97,6 +105,7 @@ class CollectionPointController extends Controller
     {
         $point = CollectionPoint::findOrFail($id);
         $point->delete();
+
         return redirect()->route('collection_points.index');
     }
 }

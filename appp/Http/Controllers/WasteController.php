@@ -11,12 +11,14 @@ class WasteController extends Controller
     public function index()
     {
         $wastes = Waste::where('user_id', Auth::id())->get();
+
         return view('wastes.index', compact('wastes'));
     }
 
     public function create()
     {
         $collectionPoints = \App\Models\CollectionPoint::where('status', 'active')->get();
+
         return view('wastes.create', compact('collectionPoints'));
     }
 
@@ -38,6 +40,7 @@ class WasteController extends Controller
             'user_id' => Auth::id(),
             'collection_point_id' => $validated['collection_point_id'],
         ]);
+
         return redirect()->route('wastes.index')->with('success', 'Waste created successfully.');
     }
 
@@ -46,6 +49,7 @@ class WasteController extends Controller
         if ($waste->user_id !== Auth::id()) {
             abort(403);
         }
+
         return view('wastes.show', compact('waste'));
     }
 
@@ -53,6 +57,7 @@ class WasteController extends Controller
     {
         $waste = Waste::findOrFail($id);
         $collectionPoints = \App\Models\CollectionPoint::where('status', 'active')->get();
+
         return view('wastes.edit', compact('waste', 'collectionPoints'));
     }
 
@@ -67,6 +72,7 @@ class WasteController extends Controller
         ]);
         $waste = Waste::findOrFail($id);
         $waste->update($validated);
+
         return redirect()->route('wastes.index')->with('success', 'Waste updated successfully.');
     }
 
@@ -74,6 +80,7 @@ class WasteController extends Controller
     {
         $waste = Waste::findOrFail($id);
         $waste->delete();
+
         return redirect()->route('wastes.index')->with('success', 'Waste deleted successfully.');
     }
 }

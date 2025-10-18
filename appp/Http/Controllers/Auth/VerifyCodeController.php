@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class VerifyCodeController extends Controller
@@ -12,9 +12,10 @@ class VerifyCodeController extends Controller
     public function showVerificationForm(Request $request)
     {
         $userId = $request->session()->get('verify_user_id');
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('login');
         }
+
         return view('auth.verify-code');
     }
 
@@ -24,11 +25,11 @@ class VerifyCodeController extends Controller
             'code' => 'required|digits:6',
         ]);
         $userId = $request->session()->get('verify_user_id');
-        if (!$userId) {
+        if (! $userId) {
             return redirect()->route('login');
         }
         $user = User::find($userId);
-        if (!$user || $user->email_verification_code !== $request->code) {
+        if (! $user || $user->email_verification_code !== $request->code) {
             return back()->with('error', 'Invalid verification code.');
         }
         $user->is_email_verified = true;
@@ -36,6 +37,7 @@ class VerifyCodeController extends Controller
         $user->save();
         Auth::login($user);
         $request->session()->forget('verify_user_id');
+
         return redirect()->route('dashboard');
     }
 }

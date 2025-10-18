@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     protected $apiKey;
+
     protected $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
     public function __construct()
@@ -17,11 +18,11 @@ class GeminiService
 
     /**
      * Analyze challenge submission proof (image + description)
-     * 
-     * @param string $challengeTitle The challenge title
-     * @param string $challengeDescription The challenge description
-     * @param string $userDescription User's proof description
-     * @param string $imageBase64 Base64 encoded image
+     *
+     * @param  string  $challengeTitle  The challenge title
+     * @param  string  $challengeDescription  The challenge description
+     * @param  string  $userDescription  User's proof description
+     * @param  string  $imageBase64  Base64 encoded image
      * @return array ['approved' => bool, 'confidence' => float, 'reason' => string]
      */
     public function analyzeSubmission(
@@ -41,7 +42,7 @@ class GeminiService
 
             // Make API request
             $response = Http::timeout(30)
-                ->post($this->apiUrl . '?key=' . $this->apiKey, [
+                ->post($this->apiUrl.'?key='.$this->apiKey, [
                     'contents' => [
                         [
                             'parts' => [
@@ -49,36 +50,36 @@ class GeminiService
                                 [
                                     'inline_data' => [
                                         'mime_type' => 'image/jpeg',
-                                        'data' => $imageBase64
-                                    ]
-                                ]
-                            ]
-                        ]
+                                        'data' => $imageBase64,
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                     'generationConfig' => [
                         'temperature' => 0.4,
                         'topK' => 32,
                         'topP' => 1,
                         'maxOutputTokens' => 500,
-                    ]
+                    ],
                 ]);
 
             if ($response->successful()) {
                 $result = $response->json();
-                
+
                 Log::info('✅ Gemini API Success', [
                     'has_candidates' => isset($result['candidates']),
                     'candidates_count' => count($result['candidates'] ?? []),
-                    'full_response' => json_encode($result, JSON_PRETTY_PRINT)
+                    'full_response' => json_encode($result, JSON_PRETTY_PRINT),
                 ]);
-                
+
                 return $this->parseGeminiResponse($result);
             }
 
             Log::error('❌ Gemini API Error', [
                 'status' => $response->status(),
                 'body' => $response->body(),
-                'headers' => $response->headers()
+                'headers' => $response->headers(),
             ]);
 
             return $this->getDefaultResponse('API request failed');
@@ -86,10 +87,10 @@ class GeminiService
         } catch (\Exception $e) {
             Log::error('Gemini Service Exception', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->getDefaultResponse('Exception: ' . $e->getMessage());
+            return $this->getDefaultResponse('Exception: '.$e->getMessage());
         }
     }
 
@@ -138,12 +139,12 @@ PROMPT;
     {
         try {
             $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? '';
-            
+
             Log::info('📝 Parsing AI Response', [
                 'raw_text' => $text,
-                'text_length' => strlen($text)
+                'text_length' => strlen($text),
             ]);
-            
+
             // Extract JSON from response (in case there's extra text)
             if (preg_match('/\{[^}]+\}/', $text, $matches)) {
                 $jsonStr = $matches[0];
@@ -153,41 +154,41 @@ PROMPT;
                     'found_json' => $jsonStr,
                     'parsed_data' => $data,
                     'json_error' => json_last_error_msg(),
-                    'has_approved_key' => isset($data['approved'])
+                    'has_approved_key' => isset($data['approved']),
                 ]);
 
                 if (json_last_error() === JSON_ERROR_NONE && isset($data['approved'])) {
                     Log::info('✨ Successfully parsed structured response', [
                         'approved' => $data['approved'],
-                        'confidence' => $data['confidence'] ?? 0.5
+                        'confidence' => $data['confidence'] ?? 0.5,
                     ]);
-                    
+
                     return [
                         'approved' => (bool) $data['approved'],
                         'confidence' => (float) ($data['confidence'] ?? 0.5),
                         'reason' => (string) ($data['reason'] ?? 'No reason provided'),
-                        'raw_response' => $text
+                        'raw_response' => $text,
                     ];
                 }
             }
 
             // If JSON parsing fails, try to interpret the response
             $text = strtolower($text);
-            $approved = str_contains($text, 'approved') || 
-                       str_contains($text, 'valid') || 
+            $approved = str_contains($text, 'approved') ||
+                       str_contains($text, 'valid') ||
                        str_contains($text, 'legitimate');
 
             return [
                 'approved' => $approved,
                 'confidence' => 0.5,
                 'reason' => 'Could not parse structured response. Manual review recommended.',
-                'raw_response' => $text
+                'raw_response' => $text,
             ];
 
         } catch (\Exception $e) {
             Log::error('Failed to parse Gemini response', [
                 'error' => $e->getMessage(),
-                'result' => $result
+                'result' => $result,
             ]);
 
             return $this->getDefaultResponse('Failed to parse AI response');
@@ -202,8 +203,8 @@ PROMPT;
         return [
             'approved' => false,
             'confidence' => 0.0,
-            'reason' => $reason . ' - Manual review required.',
-            'raw_response' => null
+            'reason' => $reason.' - Manual review required.',
+            'raw_response' => null,
         ];
     }
 }

@@ -26,6 +26,7 @@ class ProductController extends Controller
         } else {
             $wastes = Waste::where('user_id', Auth::id())->get();
         }
+
         return view('products.create', compact('wastes'));
     }
 
@@ -44,12 +45,13 @@ class ProductController extends Controller
         // Regular users can only create from their own wastes
         if (Auth::user()->role !== 'collector') {
             $waste = Waste::where('id', $validated['waste_id'])->where('user_id', Auth::id())->first();
-            if (!$waste) {
+            if (! $waste) {
                 abort(403, 'You can only create products from your own wastes.');
             }
         }
 
         Product::create($validated);
+
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
 
@@ -59,6 +61,7 @@ class ProductController extends Controller
             abort(403);
         }
         $product->load('waste');
+
         return view('products.show', compact('product'));
     }
 
@@ -68,6 +71,7 @@ class ProductController extends Controller
             abort(403);
         }
         $wastes = Waste::where('user_id', Auth::id())->get();
+
         return view('products.edit', compact('product', 'wastes'));
     }
 
@@ -88,11 +92,12 @@ class ProductController extends Controller
 
         // Ownership check for selected waste
         $waste = Waste::where('id', $validated['waste_id'])->where('user_id', Auth::id())->first();
-        if (!$waste) {
+        if (! $waste) {
             abort(403);
         }
 
         $product->update($validated);
+
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
@@ -102,6 +107,7 @@ class ProductController extends Controller
             abort(403);
         }
         $product->delete();
+
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
 }

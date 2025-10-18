@@ -16,9 +16,11 @@ class WasteController extends Controller
     {
         $this->classificationService = $classificationService;
     }
+
     public function index()
     {
         $wastes = Waste::with('collectionPoint')->get();
+
         return view('wastes.index', compact('wastes'));
     }
 
@@ -27,7 +29,7 @@ class WasteController extends Controller
         $collectionPoints = \App\Models\CollectionPoint::where('status', 'active')->get();
         $aiAvailable = $this->classificationService->isAvailable();
         $wasteCategories = $this->classificationService->getCategories();
-        
+
         return view('wastes.create', compact('collectionPoints', 'aiAvailable', 'wasteCategories'));
     }
 
@@ -59,14 +61,14 @@ class WasteController extends Controller
 
             // Try to classify with AI
             $classification = $this->classificationService->classifyFromBase64($imageData);
-            
+
             if ($classification['success']) {
                 // Auto-fill waste type from AI if user hasn't changed it
                 if ($request->input('use_ai_classification') === 'true') {
                     $wasteData['type'] = $classification['waste_type'];
                 }
                 $wasteData['ai_confidence'] = $classification['confidence'];
-                
+
                 Log::info('Waste classified by AI', [
                     'predicted_type' => $classification['waste_type'],
                     'confidence' => $classification['confidence'],
@@ -77,7 +79,7 @@ class WasteController extends Controller
         }
 
         Waste::create($wasteData);
-        
+
         return redirect()->route('wastes.index')->with('success', 'Waste created successfully.');
     }
 
@@ -86,6 +88,7 @@ class WasteController extends Controller
         if ($waste->user_id !== Auth::id()) {
             abort(403);
         }
+
         return view('wastes.show', compact('waste'));
     }
 
@@ -93,6 +96,7 @@ class WasteController extends Controller
     {
         $waste = Waste::findOrFail($id);
         $collectionPoints = \App\Models\CollectionPoint::where('status', 'active')->get();
+
         return view('wastes.edit', compact('waste', 'collectionPoints'));
     }
 
@@ -107,6 +111,7 @@ class WasteController extends Controller
         ]);
         $waste = Waste::findOrFail($id);
         $waste->update($validated);
+
         return redirect()->route('wastes.index')->with('success', 'Waste updated successfully.');
     }
 
@@ -114,6 +119,7 @@ class WasteController extends Controller
     {
         $waste = Waste::findOrFail($id);
         $waste->delete();
+
         return redirect()->route('wastes.index')->with('success', 'Waste deleted successfully.');
     }
 
@@ -126,7 +132,7 @@ class WasteController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
-        if (!$request->hasFile('image')) {
+        if (! $request->hasFile('image')) {
             return response()->json([
                 'success' => false,
                 'error' => 'No image provided',

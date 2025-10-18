@@ -18,7 +18,7 @@ class RedirectIfAuthenticated
                 if (Auth::user()->role === 'admin') {
                     return redirect()->route('admin.dashboard');
                 }
-                
+
                 // Redirect other users to regular home
                 return redirect()->route('home');
             }

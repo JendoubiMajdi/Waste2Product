@@ -56,7 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn($word) => Str::substr($word, 0, 1))
+            ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 
@@ -73,10 +73,10 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isBanned(): bool
     {
-        if (!$this->banned_until) {
+        if (! $this->banned_until) {
             return false;
         }
-        
+
         return now()->lessThan($this->banned_until);
     }
 
@@ -85,7 +85,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getBadgeColorAttribute(): string
     {
-        return match($this->badge) {
+        return match ($this->badge) {
             'diamond' => 'b9f2ff',
             'platinum' => 'e5e4e2',
             'gold' => 'ffd700',
@@ -100,7 +100,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getBadgeIconAttribute(): string
     {
-        return match($this->badge) {
+        return match ($this->badge) {
             'diamond' => 'gem',
             'platinum' => 'star-fill',
             'gold' => 'trophy-fill',

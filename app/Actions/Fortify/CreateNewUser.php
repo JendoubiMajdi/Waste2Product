@@ -6,16 +6,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Illuminate\Validation\Rules;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
 
 class CreateNewUser implements CreatesNewUsers
 {
     /**
      * Validate and create a newly registered user.
      *
-     * @param  array  $input
      * @return \App\Models\User
      */
     public function create(array $input)
@@ -36,6 +32,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
         // $user->sendEmailVerificationNotification(); // Commented out - enable when email verification is configured
         session(['registration_success' => true]);
+
         return $user;
     }
 }

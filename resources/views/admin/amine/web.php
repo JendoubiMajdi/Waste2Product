@@ -1,16 +1,14 @@
 <?php
-use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\ProfileController;
-use App\Livewire\DonForm;
-use App\Livewire\ForumFeed;
-use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
-use Laravel\Fortify\Http\Controllers\NewPasswordController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
-use Illuminate\Auth\Events\Verified;
 use App\Models\User;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\NewPasswordController;
+use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -47,12 +45,14 @@ Route::middleware('guest')->group(function () {
         ]);
         $user = \App\Models\User::where('email', $request->email)->first();
         if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
-            if (!$user->hasVerifiedEmail()) {
+            if (! $user->hasVerifiedEmail()) {
                 return redirect()->route('verification.notice')->withErrors(['email' => 'You must verify your email before logging in.']);
             }
             \Illuminate\Support\Facades\Auth::login($user);
+
             return redirect()->intended('/dashboard');
         }
+
         return back()->withErrors(['email' => 'The provided credentials are incorrect.']);
     })->name('login');
 });
@@ -88,18 +88,17 @@ Route::get('/email/verify/{id}/{hash}', function ($id, $hash, Illuminate\Http\Re
         event(new Verified($user));
     }
     \Illuminate\Support\Facades\Auth::login($user);
+
     return redirect('/dashboard');
 })->middleware(['signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
+
     return back()->with('resent', true);
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-
 // Admin middleware to restrict access to admin only
-
-use Illuminate\Support\Facades\Auth;
 
 // Define admin middleware inline (for demonstration, should be in a separate file for production)
 // Use is_admin middleware for admin routes
@@ -107,7 +106,7 @@ Route::middleware(['auth', 'verified', 'is_admin'])->prefix('admin')->group(func
     Route::get('/', function () {
         return view('back.dashboard');
     })->name('admin.dashboard');
-    
+
     // Donations management
     Route::get('/dons', function () {
         $type = request('type');
@@ -116,14 +115,16 @@ Route::middleware(['auth', 'verified', 'is_admin'])->prefix('admin')->group(func
                 return $query->where('type', $type);
             })
             ->paginate(10);
+
         return view('back.dons.index', compact('dons', 'type'));
     })->name('admin.dons.index');
-    
+
     Route::delete('/dons/{don}', function (\App\Models\Don $don) {
         $don->delete();
+
         return redirect()->route('admin.dons.index')->with('success', 'Donation deleted successfully.');
     })->name('admin.dons.destroy');
-    
+
     // Forum management
     Route::get('/forum/activity', function () {
         // Overall statistics
@@ -132,56 +133,57 @@ Route::middleware(['auth', 'verified', 'is_admin'])->prefix('admin')->group(func
         $likeCount = \App\Models\Like::count();
         $reportCount = \App\Models\Report::count();
         $userCount = \App\Models\User::count();
-        
+
         // Activity by day (last 7 days)
         $postsByDay = \App\Models\Post::selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->where('created_at', '>=', now()->subDays(7))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-            
+
         $commentsByDay = \App\Models\Comment::selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->where('created_at', '>=', now()->subDays(7))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-            
+
         $likesByDay = \App\Models\Like::selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->where('created_at', '>=', now()->subDays(7))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-        
+
         // Activity by type (pie chart data)
         $activityTypes = [
             'Posts' => $postCount,
             'Comments' => $commentCount,
             'Likes' => $likeCount,
-            'Reports' => $reportCount
+            'Reports' => $reportCount,
         ];
-        
+
         // Most active users
         $topUsers = \App\Models\User::withCount(['posts', 'comments', 'likes'])
             ->orderByRaw('posts_count + comments_count + likes_count DESC')
             ->take(5)
             ->get();
-        
+
         return view('back.forum.activity', compact(
             'postCount', 'commentCount', 'likeCount', 'reportCount', 'userCount',
             'postsByDay', 'commentsByDay', 'likesByDay', 'activityTypes', 'topUsers'
         ));
     })->name('admin.forum.activity');
-    
+
     Route::get('/forum/reports', function () {
         $reports = \App\Models\Report::with(['user', 'post.user'])->paginate(10);
+
         return view('back.forum.reports', compact('reports'));
     })->name('admin.forum.reports');
-    
+
     // User management
     Route::post('/users/{user}/ban', function (\App\Models\User $user) {
         $duration = (int) request('duration'); // Cast to integer
         $reason = request('reason');
-        
+
         if ($duration > 0) {
             $user->banned_until = now()->addDays($duration);
             $banMessage = "You have been banned for {$duration} days. Reason: {$reason}";
@@ -191,36 +193,35 @@ Route::middleware(['auth', 'verified', 'is_admin'])->prefix('admin')->group(func
         }
         $user->ban_reason = $reason;
         $user->save();
-        
+
         // Create ban notification
         \App\Models\Notification::create([
             'user_id' => $user->id,
             'type' => 'ban',
             'message' => $banMessage,
             'related_id' => null,
-            'is_read' => false
+            'is_read' => false,
         ]);
-        
+
         return redirect()->back()->with('success', 'User banned successfully.');
     })->name('admin.users.ban');
-    
+
     Route::post('/users/{user}/unban', function (\App\Models\User $user) {
         $user->banned_until = null;
         $user->ban_reason = null;
         $user->save();
-        
+
         // Create unban notification
         \App\Models\Notification::create([
             'user_id' => $user->id,
             'type' => 'unban',
             'message' => 'Your account has been unbanned. You can now participate in the forum again.',
             'related_id' => null,
-            'is_read' => false
+            'is_read' => false,
         ]);
-        
+
         return redirect()->back()->with('success', 'User unbanned successfully.');
     })->name('admin.users.unban');
 });
-
 
 require __DIR__.'/custom_register.php';

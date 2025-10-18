@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\CollectionPoint;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\Waste;
-use App\Models\CollectionPoint;
-use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -46,6 +45,7 @@ class AdminDashboardController extends Controller
                 $order->total = $order->products->sum(function ($product) {
                     return $product->pivot->quantite * $product->prix;
                 });
+
                 return $order;
             });
 
@@ -80,15 +80,17 @@ class AdminDashboardController extends Controller
 
     private function calculateGrowth($model, $column = null)
     {
-        $currentMonth = $column 
+        $currentMonth = $column
             ? $model::whereMonth('created_at', now()->month)->sum($column)
             : $model::whereMonth('created_at', now()->month)->count();
-        
+
         $lastMonth = $column
             ? $model::whereMonth('created_at', now()->subMonth()->month)->sum($column)
             : $model::whereMonth('created_at', now()->subMonth()->month)->count();
 
-        if ($lastMonth == 0) return 100;
+        if ($lastMonth == 0) {
+            return 100;
+        }
 
         return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
     }
@@ -102,7 +104,7 @@ class AdminDashboardController extends Controller
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $labels[] = $date->format('M d');
-            
+
             $dailySales = Order::whereDate('created_at', $date->toDateString())
                 ->with('products')
                 ->get()
@@ -111,7 +113,7 @@ class AdminDashboardController extends Controller
                         return $product->pivot->quantite * $product->prix;
                     });
                 });
-            
+
             $data[] = $dailySales;
         }
 

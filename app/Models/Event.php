@@ -32,7 +32,7 @@ class Event extends Model
      */
     public function getEventDateTimeAttribute()
     {
-        return $this->event_date->format('Y-m-d') . ' ' . $this->event_time;
+        return $this->event_date->format('Y-m-d').' '.$this->event_time;
     }
 
     /**
@@ -65,9 +65,10 @@ class Event extends Model
      */
     public function isFull()
     {
-        if (!$this->max_participants) {
+        if (! $this->max_participants) {
             return false;
         }
+
         return $this->participants()->count() >= $this->max_participants;
     }
 }

@@ -54,8 +54,10 @@ class Post extends Model
     {
         if (\Illuminate\Support\Facades\Auth::check()) {
             $reaction = $this->reactions()->where('user_id', \Illuminate\Support\Facades\Auth::id())->first();
+
             return $reaction ? $reaction->type : null;
         }
+
         return null;
     }
 

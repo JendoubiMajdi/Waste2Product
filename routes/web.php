@@ -1,16 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\CollectionPointController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LivraisonController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\WasteController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\CollectionPointController;
-use App\Http\Controllers\LivraisonController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', function () {
@@ -22,6 +22,7 @@ Route::get('/', function () {
     if (view()->exists('index')) {
         return view('index');
     }
+
     return view('welcome');
 });
 
@@ -38,11 +39,13 @@ Route::get('/email/verify', function () {
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
+
     return redirect('/home');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
+
     return back()->with('message', 'Verification link sent!');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
@@ -82,54 +85,55 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Home/Dashboard
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    
+
     // Logout
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
-    
+
     // Progress/Leaderboard
-    Route::get('/progress', function() {
+    Route::get('/progress', function () {
         $user = Auth::user();
-        
+
         // Get user stats
         $totalSubmissions = App\Models\ChallengeSubmission::where('user_id', $user->id)->count();
         $approvedSubmissions = App\Models\ChallengeSubmission::where('user_id', $user->id)->where('status', 'approved')->count();
         $approvalRate = $totalSubmissions > 0 ? round(($approvedSubmissions / $totalSubmissions) * 100) : 0;
-        
+
         // Get top 10 users
         $topUsers = App\Models\User::orderBy('points', 'desc')->take(10)->get();
-        
+
         // Get current user rank
         $userRank = App\Models\User::where('points', '>', $user->points)->count() + 1;
-        
+
         return view('progress.index', compact('user', 'totalSubmissions', 'approvedSubmissions', 'approvalRate', 'topUsers', 'userRank'));
     })->middleware('auth')->name('progress');
-    
+
     // Challenges
     Route::get('/challenges', [ChallengeController::class, 'index'])->name('challenges.index');
     Route::post('/challenges/{challengeId}/submit', [ChallengeController::class, 'submitProof'])->name('challenges.submit');
-    
+
     // Products
     Route::resource('products', ProductController::class);
-    
+
     // Wastes
     Route::post('/wastes/classify-image', [WasteController::class, 'classifyImage'])->name('wastes.classify');
     Route::resource('wastes', WasteController::class);
-    
+
     // Orders
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
     Route::resource('orders', OrderController::class);
-    
+
     // Collection Points
     Route::get('/collection_points/dashboard', [CollectionPointController::class, 'dashboard'])->name('collection_points.dashboard');
     Route::get('/collection_points/map', [CollectionPointController::class, 'showMap'])->name('collection_points.map');
     Route::post('/collection_points/find-nearest', [CollectionPointController::class, 'findNearest'])->name('collection_points.findNearest');
     Route::resource('collection_points', CollectionPointController::class);
-    
+
     // Livraisons
     Route::resource('livraisons', LivraisonController::class);
 
@@ -164,9 +168,9 @@ Route::middleware(['auth'])->group(function () {
 // Admin Backoffice Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
-    
+
     // Users Management
-    Route::get('/users', function() { 
+    Route::get('/users', function () {
         $users = App\Models\User::paginate(20);
         $stats = [
             'total' => App\Models\User::count(),
@@ -174,43 +178,44 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
             'collectors' => App\Models\User::where('role', 'collector')->count(),
             'customers' => App\Models\User::where('role', 'customer')->count(),
         ];
-        return view('admin.users.index', compact('users', 'stats')); 
+
+        return view('admin.users.index', compact('users', 'stats'));
     })->name('users');
-    
-    Route::patch('/users/{user}', function(App\Models\User $user) {
+
+    Route::patch('/users/{user}', function (App\Models\User $user) {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,collector,transporter,customer'
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'role' => 'required|in:admin,collector,transporter,customer',
         ]);
-        
+
         $user->update($validated);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'User updated successfully',
-            'user' => $user
+            'user' => $user,
         ]);
     })->name('users.update');
-    
-    Route::delete('/users/{user}', function(App\Models\User $user) {
+
+    Route::delete('/users/{user}', function (App\Models\User $user) {
         if ($user->id === Auth::id()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You cannot delete yourself'
+                'message' => 'You cannot delete yourself',
             ], 403);
         }
-        
+
         $user->delete();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'User deleted successfully'
+            'message' => 'User deleted successfully',
         ]);
     })->name('users.destroy');
-    
+
     // Orders Management
-    Route::get('/orders', function() { 
+    Route::get('/orders', function () {
         $orders = App\Models\Order::with(['client', 'products'])
             ->latest()
             ->paginate(20)
@@ -218,146 +223,152 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
                 $order->total = $order->products->sum(function ($product) {
                     return $product->pivot->quantite * $product->prix;
                 });
+
                 return $order;
             });
-        return view('admin.orders.index', compact('orders')); 
+
+        return view('admin.orders.index', compact('orders'));
     })->name('orders');
-    
-    Route::patch('/orders/{order}/update-status', function(App\Models\Order $order) {
+
+    Route::patch('/orders/{order}/update-status', function (App\Models\Order $order) {
         $validated = request()->validate([
-            'statut' => 'required|in:en cours,livré,annulé'
+            'statut' => 'required|in:en cours,livré,annulé',
         ]);
-        
+
         $order->update(['statut' => $validated['statut']]);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Order status updated successfully',
-            'order' => $order
+            'order' => $order,
         ]);
     })->name('orders.update-status');
-    
+
     // Products Management
-    Route::get('/products', function() { 
+    Route::get('/products', function () {
         $products = App\Models\Product::paginate(20);
-        return view('admin.products.index', compact('products')); 
+
+        return view('admin.products.index', compact('products'));
     })->name('products');
-    
-    Route::patch('/products/{product}', function(App\Models\Product $product) {
+
+    Route::patch('/products/{product}', function (App\Models\Product $product) {
         $validated = request()->validate([
             'nom' => 'required|string|max:255',
             'description' => 'nullable|string',
             'prix' => 'required|numeric|min:0',
             'quantite' => 'required|integer|min:0',
-            'etat' => 'required|in:disponible,rupture'
+            'etat' => 'required|in:disponible,rupture',
         ]);
-        
+
         $product->update($validated);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Product updated successfully',
-            'product' => $product
+            'product' => $product,
         ]);
     })->name('products.update');
-    
-    Route::delete('/products/{product}', function(App\Models\Product $product) {
+
+    Route::delete('/products/{product}', function (App\Models\Product $product) {
         $product->delete();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Product deleted successfully'
+            'message' => 'Product deleted successfully',
         ]);
     })->name('products.destroy');
-    
+
     // Collection Points Management
-    Route::get('/collection-points', function() { 
+    Route::get('/collection-points', function () {
         $collection_points = App\Models\CollectionPoint::paginate(20);
-        return view('admin.collection-points.index', compact('collection_points')); 
+
+        return view('admin.collection-points.index', compact('collection_points'));
     })->name('collection-points');
-    
-    Route::patch('/collection-points/{collectionPoint}', function(App\Models\CollectionPoint $collectionPoint) {
+
+    Route::patch('/collection-points/{collectionPoint}', function (App\Models\CollectionPoint $collectionPoint) {
         $validated = request()->validate([
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'working_hours' => 'required|string|regex:/^\d{2}:\d{2}-\d{2}:\d{2}$/',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
         ]);
-        
+
         $collectionPoint->update($validated);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Collection point updated successfully',
-            'collection_point' => $collectionPoint
+            'collection_point' => $collectionPoint,
         ]);
     })->name('collection-points.update');
-    
-    Route::patch('/collection-points/{collectionPoint}/toggle-status', function(App\Models\CollectionPoint $collectionPoint) {
+
+    Route::patch('/collection-points/{collectionPoint}/toggle-status', function (App\Models\CollectionPoint $collectionPoint) {
         $validated = request()->validate([
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
         ]);
-        
+
         $collectionPoint->update(['status' => $validated['status']]);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Collection point status updated successfully',
-            'collection_point' => $collectionPoint
+            'collection_point' => $collectionPoint,
         ]);
     })->name('collection-points.toggle-status');
-    
-    Route::delete('/collection-points/{collectionPoint}', function(App\Models\CollectionPoint $collectionPoint) {
+
+    Route::delete('/collection-points/{collectionPoint}', function (App\Models\CollectionPoint $collectionPoint) {
         $collectionPoint->delete();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Collection point deleted successfully'
+            'message' => 'Collection point deleted successfully',
         ]);
     })->name('collection-points.destroy');
-    
+
     // Wastes Management
-    Route::get('/wastes', function() { 
+    Route::get('/wastes', function () {
         $wastes = App\Models\Waste::with(['user', 'collectionPoint'])
             ->latest()
             ->paginate(20);
-        return view('admin.wastes.index', compact('wastes')); 
+
+        return view('admin.wastes.index', compact('wastes'));
     })->name('wastes');
-    
-    Route::patch('/wastes/{waste}', function(App\Models\Waste $waste) {
+
+    Route::patch('/wastes/{waste}', function (App\Models\Waste $waste) {
         $validated = request()->validate([
             'type' => 'required|string|max:255',
             'quantite' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,collected,processed'
+            'status' => 'required|in:pending,collected,processed',
         ]);
-        
+
         $waste->update($validated);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Waste updated successfully',
-            'waste' => $waste
+            'waste' => $waste,
         ]);
     })->name('wastes.update');
-    
-    Route::delete('/wastes/{waste}', function(App\Models\Waste $waste) {
+
+    Route::delete('/wastes/{waste}', function (App\Models\Waste $waste) {
         $waste->delete();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Waste deleted successfully'
+            'message' => 'Waste deleted successfully',
         ]);
     })->name('wastes.destroy');
-    
+
     // Challenges Management
-    Route::get('/challenges', function() { 
+    Route::get('/challenges', function () {
         $challenges = App\Models\Challenge::withCount('submissions')
             ->latest()
             ->paginate(20);
-        return view('admin.challenges.index', compact('challenges')); 
+
+        return view('admin.challenges.index', compact('challenges'));
     })->name('challenges');
-    
-    Route::post('/challenges', function() {
+
+    Route::post('/challenges', function () {
         $data = request()->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -365,63 +376,64 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
             'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
-        
+
         // Handle image upload
         if (request()->hasFile('image')) {
             $data['image'] = base64_encode(file_get_contents(request()->file('image')->getRealPath()));
         }
-        
+
         App\Models\Challenge::create($data);
-        
+
         return redirect()->route('admin.challenges')->with('success', 'Challenge created successfully!');
     })->name('challenges.store');
-    
-    Route::patch('/challenges/{challenge}', function(App\Models\Challenge $challenge) {
+
+    Route::patch('/challenges/{challenge}', function (App\Models\Challenge $challenge) {
         $validated = request()->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'points' => 'required|integer|min:1|max:100',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
         ]);
-        
+
         $challenge->update($validated);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Challenge updated successfully',
-            'challenge' => $challenge
+            'challenge' => $challenge,
         ]);
     })->name('challenges.update');
-    
-    Route::delete('/challenges/{challenge}', function(App\Models\Challenge $challenge) {
+
+    Route::delete('/challenges/{challenge}', function (App\Models\Challenge $challenge) {
         $challenge->delete();
-        
+
         return response()->json([
             'success' => true,
-            'message' => 'Challenge deleted successfully'
+            'message' => 'Challenge deleted successfully',
         ]);
     })->name('challenges.destroy');
-    
+
     // Challenge Submissions Management
-    Route::get('/submissions', function() { 
+    Route::get('/submissions', function () {
         $submissions = App\Models\ChallengeSubmission::with(['user', 'challenge'])
             ->latest()
             ->paginate(20);
-        return view('admin.submissions.index', compact('submissions')); 
+
+        return view('admin.submissions.index', compact('submissions'));
     })->name('submissions');
-    
-    Route::post('/submissions/{submission}/approve', function(App\Models\ChallengeSubmission $submission) {
+
+    Route::post('/submissions/{submission}/approve', function (App\Models\ChallengeSubmission $submission) {
         $submission->update([
             'status' => 'approved',
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
-        
+
         // Award points to user
         $user = $submission->user;
         $challenge = $submission->challenge;
         $user->increment('points', $challenge->points);
-        
+
         // Update user badge based on new points
         if ($user->points >= 1000) {
             $user->badge = 'diamond';
@@ -437,26 +449,32 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
             $user->badge = 'beginner';
         }
         $user->save();
-        
+
         return back()->with('success', 'Submission approved successfully!');
     })->name('submissions.approve');
-    
-    Route::post('/submissions/{submission}/reject', function(App\Models\ChallengeSubmission $submission) {
+
+    Route::post('/submissions/{submission}/reject', function (App\Models\ChallengeSubmission $submission) {
         $submission->update([
             'status' => 'rejected',
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
-        
+
         return back()->with('success', 'Submission rejected successfully!');
     })->name('submissions.reject');
-    
+
     // Reports
-    Route::get('/reports', function() { return view('admin.reports.index'); })->name('reports');
-    
+    Route::get('/reports', function () {
+        return view('admin.reports.index');
+    })->name('reports');
+
     // Settings
-    Route::get('/settings', function() { return view('admin.settings.index'); })->name('settings');
-    
+    Route::get('/settings', function () {
+        return view('admin.settings.index');
+    })->name('settings');
+
     // Profile
-    Route::get('/profile', function() { return view('admin.profile.index'); })->name('profile');
+    Route::get('/profile', function () {
+        return view('admin.profile.index');
+    })->name('profile');
 });

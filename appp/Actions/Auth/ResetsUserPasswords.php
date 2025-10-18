@@ -2,7 +2,6 @@
 
 namespace App\Actions\Auth;
 
-use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Laravel\Fortify\Contracts\ResetsUserPasswords as ResetsUserPasswordsContract;

@@ -19,16 +19,16 @@ class EventController extends Controller
             ->withCount('participants')
             ->orderBy('event_date')
             ->paginate(12);
-        
+
         $pastEvents = Event::with(['user', 'participants'])
             ->where('status', 'completed')
-            ->orWhere(function($query) {
+            ->orWhere(function ($query) {
                 $query->where('event_date', '<', now());
             })
             ->withCount('participants')
             ->orderBy('event_date', 'desc')
             ->paginate(12);
-        
+
         return view('events.index', compact('upcomingEvents', 'pastEvents'));
     }
 
@@ -38,10 +38,10 @@ class EventController extends Controller
     public function create()
     {
         // Only admins can create events
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             abort(403, 'Only administrators can create events.');
         }
-        
+
         return view('events.create');
     }
 
@@ -50,7 +50,7 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             abort(403, 'Only administrators can create events.');
         }
 
@@ -67,7 +67,7 @@ class EventController extends Controller
         $datetime = new \DateTime($request->event_date);
         $validated['event_date'] = $datetime->format('Y-m-d');
         $validated['event_time'] = $datetime->format('H:i:s');
-        
+
         $validated['user_id'] = Auth::id();
         $validated['status'] = 'active';
 
@@ -89,7 +89,7 @@ class EventController extends Controller
     {
         $event->load(['user', 'participants']);
         $isRegistered = Auth::check() && $event->isUserRegistered(Auth::id());
-        
+
         return view('events.show', compact('event', 'isRegistered'));
     }
 
@@ -119,7 +119,7 @@ class EventController extends Controller
      */
     public function unregister(Event $event)
     {
-        if (!$event->isUserRegistered(Auth::id())) {
+        if (! $event->isUserRegistered(Auth::id())) {
             return redirect()->route('events.show', $event)
                 ->with('error', 'You are not registered for this event.');
         }
@@ -135,10 +135,10 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             abort(403, 'Only administrators can edit events.');
         }
-        
+
         return view('events.edit', compact('event'));
     }
 
@@ -147,7 +147,7 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             abort(403, 'Only administrators can edit events.');
         }
 
@@ -178,7 +178,7 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             abort(403, 'Only administrators can delete events.');
         }
 
@@ -194,7 +194,7 @@ class EventController extends Controller
     public function myEvents()
     {
         $user = Auth::user();
-        
+
         // Get events the user has registered for
         $upcomingEvents = $user->events()
             ->with(['user', 'participants'])
@@ -202,14 +202,14 @@ class EventController extends Controller
             ->where('event_date', '>=', now())
             ->orderBy('event_date')
             ->get();
-        
+
         $pastEvents = $user->events()
             ->with(['user', 'participants'])
             ->withCount('participants')
             ->where('event_date', '<', now())
             ->orderBy('event_date', 'desc')
             ->get();
-        
+
         return view('events.my-events', compact('upcomingEvents', 'pastEvents'));
     }
 }

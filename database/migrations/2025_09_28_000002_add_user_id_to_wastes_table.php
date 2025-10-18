@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('wastes', function (Blueprint $table) {
-            if (!Schema::hasColumn('wastes', 'user_id')) {
+            if (! Schema::hasColumn('wastes', 'user_id')) {
                 $table->unsignedBigInteger('user_id')->nullable()->after('localisation');
                 $table->index('user_id');
             }
@@ -21,7 +21,10 @@ return new class extends Migration
         Schema::table('wastes', function (Blueprint $table) {
             if (Schema::hasColumn('wastes', 'user_id')) {
                 // Drop index if exists then column
-                try { $table->dropIndex(['user_id']); } catch (\Throwable $e) {}
+                try {
+                    $table->dropIndex(['user_id']);
+                } catch (\Throwable $e) {
+                }
                 $table->dropColumn('user_id');
             }
         });

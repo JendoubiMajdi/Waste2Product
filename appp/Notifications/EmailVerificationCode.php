@@ -27,7 +27,7 @@ class EmailVerificationCode extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('Your Email Verification Code')
-            ->line('Your verification code is: ' . $this->code)
+            ->line('Your verification code is: '.$this->code)
             ->line('Enter this code to verify your email address.');
     }
 }

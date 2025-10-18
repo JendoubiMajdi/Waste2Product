@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-
-use Illuminate\Http\Request;
 use App\Models\Livraison;
+use Illuminate\Http\Request;
 
 class LivraisonController extends Controller
 {
@@ -14,6 +13,7 @@ class LivraisonController extends Controller
     public function index()
     {
         $livraisons = Livraison::all();
+
         return view('livraisons.index', compact('livraisons'));
     }
 
@@ -37,23 +37,23 @@ class LivraisonController extends Controller
             'dateLivraison' => 'required|date|after:today',
             'statut' => 'required|string',
         ]);
-        
+
         // Create the delivery
         $livraison = Livraison::create($validated);
-        
+
         // Update the order with transporter and status
         $order = \App\Models\Order::find($validated['idOrder']);
         if ($order) {
             // Calculate estimated delivery time (example: 2-3 days from acceptance)
             $estimatedTime = \Carbon\Carbon::parse($validated['dateLivraison'])->setTime(14, 0); // 2 PM on delivery date
-            
+
             $order->update([
                 'statut' => 'in_delivery',
                 'transporter_id' => auth()->id(), // Assign current transporter
                 'estimated_delivery_time' => $estimatedTime,
             ]);
         }
-        
+
         return redirect()->route('orders.index')->with('success', 'Delivery accepted successfully. You are now assigned as the transporter.');
     }
 
@@ -63,6 +63,7 @@ class LivraisonController extends Controller
     public function show(string $id)
     {
         $livraison = Livraison::findOrFail($id);
+
         return view('livraisons.show', compact('livraison'));
     }
 
@@ -72,6 +73,7 @@ class LivraisonController extends Controller
     public function edit(string $id)
     {
         $livraison = Livraison::findOrFail($id);
+
         return view('livraisons.edit', compact('livraison'));
     }
 
@@ -88,10 +90,10 @@ class LivraisonController extends Controller
             'dateLivraison' => 'required|date',
             'statut' => 'required|string',
         ]);
-        
+
         // Update the delivery
         $livraison->update($validated);
-        
+
         // Update the order status if delivery is marked as delivered
         if ($validated['statut'] === 'delivered') {
             $order = \App\Models\Order::find($validated['idOrder']);
@@ -99,7 +101,7 @@ class LivraisonController extends Controller
                 $order->update(['statut' => 'delivered']);
             }
         }
-        
+
         return redirect()->route('livraisons.index')->with('success', 'Livraison mise à jour avec succès.');
     }
 
@@ -110,6 +112,7 @@ class LivraisonController extends Controller
     {
         $livraison = Livraison::findOrFail($id);
         $livraison->delete();
+
         return redirect()->route('livraisons.index')->with('success', 'Livraison supprimée avec succès.');
     }
 }
