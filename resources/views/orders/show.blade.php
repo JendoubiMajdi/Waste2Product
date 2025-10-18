@@ -73,8 +73,21 @@
                 </table>
             </div>
             <div class="mt-3">
-                <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning">Edit</a>
-                <a href="{{ route('orders.index') }}" class="btn btn-accent">Back</a>
+                <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="{{ route('orders.invoice.download', $order->id) }}" class="btn btn-danger">
+                    <i class="bi bi-file-pdf"></i> Download Invoice
+                </a>
+                <form action="{{ route('orders.invoice.email', $order->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to email this invoice to the client?')">
+                    @csrf
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-envelope"></i> Email Invoice
+                    </button>
+                </form>
+                <a href="{{ route('orders.index') }}" class="btn btn-accent">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
             </div>
         </div>
     </div>

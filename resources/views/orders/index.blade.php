@@ -51,6 +51,15 @@
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure? Stock will be restored.')">Delete</button>
                         </form>
                         <a href="{{ route('livraisons.create', ['idOrder' => $order->id, 'idClient' => $order->client ? $order->client->id : '' ]) }}" class="btn btn-success btn-sm">Ajouter Livraison</a>
+                        <a href="{{ route('orders.invoice.download', $order->id) }}" class="btn btn-secondary btn-sm" title="Download Invoice">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        <form action="{{ route('orders.invoice.email', $order->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Email invoice to client?')">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-sm" title="Email Invoice">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

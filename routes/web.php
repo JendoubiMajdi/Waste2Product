@@ -35,6 +35,8 @@ Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])
 
 // Order routes
 Route::resource('orders', OrderController::class);
+Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
+Route::post('/orders/{order}/invoice/email', [OrderController::class, 'emailInvoice'])->name('orders.invoice.email');
 
 // Authentication routes
 Route::middleware('guest')->group(function () {

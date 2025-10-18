@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\OrderInvoiceMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -246,6 +249,65 @@ class OrderController extends Controller
             return redirect()->route('orders.index')->with('success', 'Order deleted successfully and stock restored.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete order: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Generate and download PDF invoice for an order
+     */
+    public function downloadInvoice($id)
+    {
+        $order = Order::with(['products', 'client'])->findOrFail($id);
+        
+        // Generate PDF
+        $pdf = Pdf::loadView('invoices.order', compact('order'));
+        
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'portrait');
+        
+        // Download the PDF
+        $fileName = 'Invoice-' . str_pad($order->id, 6, '0', STR_PAD_LEFT) . '.pdf';
+        return $pdf->download($fileName);
+    }
+
+    /**
+     * Email invoice to client
+     */
+    public function emailInvoice($id)
+    {
+        $order = Order::with(['products', 'client'])->findOrFail($id);
+        
+        if (!$order->client || !$order->client->email) {
+            return back()->withErrors(['error' => 'No client email address found for this order.']);
+        }
+        
+        try {
+            // Generate PDF
+            $pdf = Pdf::loadView('invoices.order', compact('order'));
+            $pdf->setPaper('A4', 'portrait');
+            
+            // Save PDF temporarily
+            $fileName = 'Invoice-' . str_pad($order->id, 6, '0', STR_PAD_LEFT) . '.pdf';
+            $pdfPath = storage_path('app/temp/' . $fileName);
+            
+            // Create temp directory if it doesn't exist
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+            
+            $pdf->save($pdfPath);
+            
+            // Send email with PDF attachment
+            Mail::to($order->client->email)->send(new OrderInvoiceMail($order, $pdfPath));
+            
+            // Delete temporary PDF file
+            if (file_exists($pdfPath)) {
+                unlink($pdfPath);
+            }
+            
+            return back()->with('success', 'Invoice sent successfully to ' . $order->client->email);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to send invoice: ' . $e->getMessage()]);
         }
     }
 }
