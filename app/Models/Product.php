@@ -16,6 +16,7 @@ class Product extends Model
         'etat',
         'prix',
         'quantite',
+        'stock_threshold',
     ];
 
     public function waste()
