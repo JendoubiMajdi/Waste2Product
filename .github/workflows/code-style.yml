@@ -1,0 +1,42 @@
+name: Code Style
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  code-style:
+    name: Check Code Style
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run Laravel Pint
+        run: ./vendor/bin/pint --test
+
+      - name: Comment PR with results
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ Code style issues detected. Please run `./vendor/bin/pint` to fix them.'
+            })

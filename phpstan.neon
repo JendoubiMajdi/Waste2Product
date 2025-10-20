@@ -1,0 +1,25 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # Level (0-9): Higher level = more strict
+    level: 5
+
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model#'
+
+    excludePaths:
+        - bootstrap/cache
+        - storage
+        - vendor
+        - node_modules
+
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false

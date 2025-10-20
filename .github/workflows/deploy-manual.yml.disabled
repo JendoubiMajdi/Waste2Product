@@ -1,0 +1,78 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      run_migrations:
+        description: 'Run database migrations'
+        required: true
+        type: boolean
+        default: true
+      run_seeders:
+        description: 'Run database seeders'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  manual-deploy:
+    name: Manual Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_PORT }}
+          script: |
+            cd C:\Users\yessi\Downloads\Passion\Passion\laravel-app
+            
+            powershell -Command "php artisan down --retry=60"
+            powershell -Command "git pull origin ${{ github.ref_name }}"
+            powershell -Command "composer install --no-dev --optimize-autoloader --no-interaction"
+            powershell -Command "npm ci"
+            powershell -Command "npm run build"
+            powershell -Command "if ('${{ github.event.inputs.run_migrations }}' -eq 'true') { php artisan migrate --force }"
+            powershell -Command "if ('${{ github.event.inputs.run_seeders }}' -eq 'true') { php artisan db:seed --force }"
+            powershell -Command "php artisan config:cache"
+            powershell -Command "php artisan route:cache"
+            powershell -Command "php artisan view:cache"
+            powershell -Command "php artisan storage:link"
+            powershell -Command "php artisan queue:restart"
+            powershell -Command "php artisan optimize"
+            powershell -Command "php artisan up"
+            powershell -Command "Write-Host 'Deployment to ${{ github.event.inputs.environment }} completed successfully!'"
+
+      - name: Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Manual deployment to ${{ github.event.inputs.environment }} ${{ job.status }}!
+            Triggered by: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
