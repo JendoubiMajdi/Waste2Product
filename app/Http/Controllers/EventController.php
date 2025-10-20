@@ -88,6 +88,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $event->load(['user', 'participants']);
+        $event->loadCount('participants');
         $isRegistered = Auth::check() && $event->isUserRegistered(Auth::id());
 
         return view('events.show', compact('event', 'isRegistered'));

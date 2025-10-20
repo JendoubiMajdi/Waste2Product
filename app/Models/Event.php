@@ -19,11 +19,17 @@ class Event extends Model
         'max_participants',
         'status',
         'user_id',
+        'ai_sentiment_summary',
+        'ai_sentiment_score',
+        'ai_insights',
+        'ai_analyzed_at',
     ];
 
     protected $casts = [
         'event_date' => 'date',
         'max_participants' => 'integer',
+        'ai_sentiment_score' => 'decimal:2',
+        'ai_analyzed_at' => 'datetime',
     ];
 
     /**
@@ -79,5 +85,45 @@ class Event extends Model
         }
 
         return $this->participants()->count() >= $this->max_participants;
+    }
+
+    /**
+     * Get all feedback for this event
+     */
+    public function feedback()
+    {
+        return $this->hasMany(EventFeedback::class);
+    }
+
+    /**
+     * Get average rating for this event
+     */
+    public function averageRating()
+    {
+        return $this->feedback()->avg('rating');
+    }
+
+    /**
+     * Check if user has given feedback for this event
+     */
+    public function hasUserFeedback($userId)
+    {
+        return $this->feedback()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Get user's feedback for this event
+     */
+    public function getUserFeedback($userId)
+    {
+        return $this->feedback()->where('user_id', $userId)->first();
+    }
+
+    /**
+     * Check if event has ended
+     */
+    public function hasEnded()
+    {
+        return \Carbon\Carbon::now()->greaterThan($this->event_date_time);
     }
 }

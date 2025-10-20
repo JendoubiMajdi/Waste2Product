@@ -219,8 +219,327 @@
                 @endif
             </div>
         </div>
+
+                        <!-- Event Feedback Section -->
+        @if($event->hasEnded())
+        <div class="row mt-5">
+            <div class="col-12">
+                <!-- AI Analytics Button (For Admin/Organizer) -->
+                @if(Auth::check() && (Auth::user()->isAdmin() || $event->user_id === Auth::id()))
+                    <div class="mb-3 text-end">
+                        <a href="{{ route('events.analytics', $event) }}" class="btn btn-lg btn-primary">
+                            <i class="bi bi-robot"></i> View AI Analytics
+                        </a>
+                    </div>
+                @endif
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="bi bi-star-fill text-warning"></i> Event Feedback
+                            </h4>
+                            @php
+                                $avgRating = $event->averageRating();
+                                $feedbackCount = $event->feedback()->count();
+                            @endphp
+                            @if($feedbackCount > 0)
+                            <div class="text-end">
+                                <div class="d-flex align-items-center">
+                                    <span class="fs-3 fw-bold text-warning me-2">{{ number_format($avgRating, 1) }}</span>
+                                    <div>
+                                        <div class="text-warning">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                @if($i <= floor($avgRating))
+                                                    <i class="bi bi-star-fill"></i>
+                                                @elseif($i - 0.5 <= $avgRating)
+                                                    <i class="bi bi-star-half"></i>
+                                                @else
+                                                    <i class="bi bi-star"></i>
+                                                @endif
+                                            @endfor
+                                        </div>
+                                        <small class="text-muted">{{ $feedbackCount }} {{ Str::plural('review', $feedbackCount) }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @auth
+                            @php
+                                $userFeedback = $event->getUserFeedback(Auth::id());
+                            @endphp
+                            
+                            @if($userFeedback)
+                                <!-- User's existing feedback (editable) -->
+                                <div class="alert alert-info mb-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-2"><i class="bi bi-info-circle"></i> Your Feedback</h6>
+                                            <div class="mb-2">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="bi bi-star{{ $i <= $userFeedback->rating ? '-fill' : '' }} text-warning"></i>
+                                                @endfor
+                                                <span class="ms-2 text-muted">{{ $userFeedback->rating }}/5</span>
+                                            </div>
+                                            @if($userFeedback->comment)
+                                                <p class="mb-0" id="feedback-comment-display">{{ $userFeedback->comment }}</p>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="toggleEditFeedback()">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <form action="{{ route('events.feedback.destroy', $userFeedback) }}" 
+                                                  method="POST" 
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('Are you sure you want to delete your feedback?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <!-- Edit Form (hidden by default) -->
+                                    <div id="edit-feedback-form" style="display: none;" class="mt-3 pt-3 border-top">
+                                        <form action="{{ route('events.feedback.update', $userFeedback) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Update Your Rating</label>
+                                                <div class="star-rating-input" id="edit-star-rating">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        <i class="bi bi-star{{ $i <= $userFeedback->rating ? '-fill' : '' }} star-icon" 
+                                                           data-rating="{{ $i }}" 
+                                                           style="font-size: 2rem; cursor: pointer; color: #ffc107;"></i>
+                                                    @endfor
+                                                </div>
+                                                <input type="hidden" name="rating" id="edit-rating-input" value="{{ $userFeedback->rating }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="edit-comment" class="form-label fw-bold">Update Your Comment</label>
+                                                <textarea name="comment" 
+                                                          id="edit-comment" 
+                                                          class="form-control" 
+                                                          rows="3" 
+                                                          maxlength="1000" 
+                                                          placeholder="Share your experience...">{{ $userFeedback->comment }}</textarea>
+                                                <small class="text-muted">Optional, max 1000 characters</small>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-save"></i> Save Changes
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" onclick="toggleEditFeedback()">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            @else
+                                <!-- Add new feedback form -->
+                                <div class="card bg-light mb-4">
+                                    <div class="card-body">
+                                        <h5 class="mb-3">
+                                            <i class="bi bi-chat-left-text"></i> Share Your Experience
+                                        </h5>
+                                        <form action="{{ route('events.feedback.store', $event) }}" method="POST">
+                                            @csrf
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Rate this event</label>
+                                                <div class="star-rating-input" id="star-rating">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        <i class="bi bi-star star-icon" 
+                                                           data-rating="{{ $i }}" 
+                                                           style="font-size: 2.5rem; cursor: pointer; color: #ffc107;"></i>
+                                                    @endfor
+                                                </div>
+                                                <input type="hidden" name="rating" id="rating-input" required>
+                                                @error('rating')
+                                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="comment" class="form-label fw-bold">Your Comment</label>
+                                                <textarea name="comment" 
+                                                          id="comment" 
+                                                          class="form-control" 
+                                                          rows="4" 
+                                                          maxlength="1000" 
+                                                          placeholder="Tell us what you thought about this event..."></textarea>
+                                                <small class="text-muted">Optional, max 1000 characters</small>
+                                                @error('comment')
+                                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="bi bi-send"></i> Submit Feedback
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endif
+                        @else
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> 
+                                Please <a href="{{ route('login') }}">login</a> to leave feedback for this event.
+                            </div>
+                        @endauth
+
+                        <!-- Display all feedback -->
+                        @if($feedbackCount > 0)
+                            <h5 class="mb-3 mt-4">
+                                <i class="bi bi-chat-dots"></i> All Reviews ({{ $feedbackCount }})
+                            </h5>
+                            <div class="feedback-list">
+                                @foreach($event->feedback()->with('user')->latest()->get() as $feedback)
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" 
+                                                         style="width: 45px; height: 45px; font-weight: bold;">
+                                                        {{ $feedback->user->initials() }}
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0">{{ $feedback->user->name }}</h6>
+                                                        <div class="text-warning">
+                                                            @for($i = 1; $i <= 5; $i++)
+                                                                <i class="bi bi-star{{ $i <= $feedback->rating ? '-fill' : '' }}"></i>
+                                                            @endfor
+                                                            <span class="text-muted ms-2">{{ $feedback->rating }}/5</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ $feedback->created_at->diffForHumans() }}</small>
+                                            </div>
+                                            @if($feedback->comment)
+                                                <p class="mb-0 ms-5 ps-3">{{ $feedback->comment }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-chat-left-text" style="font-size: 3rem;"></i>
+                                <p class="mt-3">No feedback yet. Be the first to share your experience!</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </section>
+
+<style>
+.star-icon:hover,
+.star-icon.active {
+    transform: scale(1.2);
+    transition: transform 0.2s;
+}
+</style>
+
+<script>
+// Star rating interaction for new feedback
+document.addEventListener('DOMContentLoaded', function() {
+    const starRating = document.getElementById('star-rating');
+    if (starRating) {
+        const stars = starRating.querySelectorAll('.star-icon');
+        const ratingInput = document.getElementById('rating-input');
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.add('bi-star');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        starRating.addEventListener('mouseleave', function() {
+            stars.forEach(s => s.classList.remove('active'));
+        });
+    }
+
+    // Star rating interaction for edit feedback
+    const editStarRating = document.getElementById('edit-star-rating');
+    if (editStarRating) {
+        const stars = editStarRating.querySelectorAll('.star-icon');
+        const ratingInput = document.getElementById('edit-rating-input');
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.remove('bi-star');
+                        s.classList.add('bi-star-fill');
+                    } else {
+                        s.classList.remove('bi-star-fill');
+                        s.classList.add('bi-star');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        editStarRating.addEventListener('mouseleave', function() {
+            stars.forEach(s => s.classList.remove('active'));
+        });
+    }
+});
+
+function toggleEditFeedback() {
+    const editForm = document.getElementById('edit-feedback-form');
+    const commentDisplay = document.getElementById('feedback-comment-display');
+    
+    if (editForm.style.display === 'none') {
+        editForm.style.display = 'block';
+    } else {
+        editForm.style.display = 'none';
+    }
+}
+</script>
 
 @if(Auth::check() && Auth::user()->isAdmin())
 <!-- Edit Modal -->

@@ -168,6 +168,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/events/{event}', [App\Http\Controllers\EventController::class, 'show'])->name('events.show');
     Route::post('/events/{event}/register', [App\Http\Controllers\EventController::class, 'register'])->name('events.register');
     Route::post('/events/{event}/unregister', [App\Http\Controllers\EventController::class, 'unregister'])->name('events.unregister');
+
+    // Event Feedback
+    Route::post('/events/{event}/feedback', [App\Http\Controllers\EventFeedbackController::class, 'store'])->name('events.feedback.store');
+    Route::put('/feedback/{feedback}', [App\Http\Controllers\EventFeedbackController::class, 'update'])->name('events.feedback.update');
+    Route::delete('/feedback/{feedback}', [App\Http\Controllers\EventFeedbackController::class, 'destroy'])->name('events.feedback.destroy');
+
+    // Event AI Analytics
+    Route::get('/events/{event}/analytics', [App\Http\Controllers\EventAnalyticsController::class, 'show'])->name('events.analytics');
+    Route::post('/events/{event}/analytics/generate', [App\Http\Controllers\EventAnalyticsController::class, 'generate'])->name('events.analytics.generate');
 });
 
 // Admin Backoffice Routes
