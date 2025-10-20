@@ -30,6 +30,9 @@
             </div>
         @endif
 
+        <!-- Search and Filters -->
+        @include('partials.waste-search')
+
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -66,16 +69,20 @@
                                         <a href="{{ route('wastes.show', $waste) }}" class="btn btn-sm btn-outline-info" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('wastes.edit', $waste) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('wastes.destroy', $waste) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this waste?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        @auth
+                                            @if(Auth::user()->isAdmin() || $waste->user_id === Auth::id())
+                                                <a href="{{ route('wastes.edit', $waste) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form action="{{ route('wastes.destroy', $waste) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this waste?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endauth
                                     </td>
                                 </tr>
                             @empty

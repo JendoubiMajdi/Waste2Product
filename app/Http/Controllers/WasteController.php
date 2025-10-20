@@ -17,9 +17,40 @@ class WasteController extends Controller
         $this->classificationService = $classificationService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $wastes = Waste::with('collectionPoint')->get();
+        // Start with base query
+        $query = Waste::with('collectionPoint', 'user');
+
+        // Filter by waste type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Search by location
+        if ($request->filled('location')) {
+            $location = $request->location;
+            $query->whereHas('collectionPoint', function($q) use ($location) {
+                $q->where('nom', 'like', "%{$location}%")
+                  ->orWhere('adresse', 'like', "%{$location}%");
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('start_date')) {
+            $query->where('dateDepot', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('dateDepot', '<=', $request->end_date);
+        }
+
+        // Filter by minimum quantity
+        if ($request->filled('min_quantity')) {
+            $query->where('quantite', '>=', $request->min_quantity);
+        }
+
+        // Get filtered wastes
+        $wastes = $query->get();
 
         return view('wastes.index', compact('wastes'));
     }

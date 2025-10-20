@@ -7,6 +7,9 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\OrderInvoiceMail;
 
 class OrderController extends Controller
 {
@@ -152,7 +155,7 @@ class OrderController extends Controller
      */
     public function myOrders()
     {
-        $orders = Order::with(['products', 'transporter', 'collectionPoint'])
+        $orders = Order::with(['products', 'transporter', 'collectionPoint', 'livraison'])
             ->where('client_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->get();
@@ -171,5 +174,77 @@ class OrderController extends Controller
         $order->delete();
 
         return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+    }
+
+    /**
+     * Download order invoice as PDF
+     */
+    public function downloadInvoice($id)
+    {
+        $order = Order::with(['products', 'client'])->findOrFail($id);
+        
+        // Calculate total
+        $total = $order->products->sum(function($product) {
+            return $product->prix * $product->pivot->quantite;
+        });
+        
+        $pdf = Pdf::loadView('invoices.order', compact('order', 'total'));
+        
+        return $pdf->download('invoice-' . $order->id . '.pdf');
+    }
+
+    /**
+     * Email order invoice as PDF
+     */
+    public function emailInvoice($id)
+    {
+        $order = Order::with(['products', 'client'])->findOrFail($id);
+        
+        if (!$order->client || !$order->client->email) {
+            return redirect()->back()->with('error', 'Client email not found.');
+        }
+        
+        // Calculate total
+        $total = $order->products->sum(function($product) {
+            return $product->prix * $product->pivot->quantite;
+        });
+        
+        try {
+            Mail::to($order->client->email)->send(new OrderInvoiceMail($order, $total));
+            return redirect()->back()->with('success', 'Invoice sent successfully to ' . $order->client->email);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to send invoice: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export orders to Excel/CSV
+     */
+    public function export()
+    {
+        $orders = Order::with(['products', 'client'])->get();
+        
+        // Create CSV content
+        $csv = "Order ID,Date,Client,Status,Total Amount\n";
+        
+        foreach ($orders as $order) {
+            $total = $order->products->sum(function($product) {
+                return $product->prix * $product->pivot->quantite;
+            });
+            
+            $csv .= implode(',', [
+                $order->id,
+                $order->date,
+                $order->client ? $order->client->name : 'N/A',
+                $order->statut,
+                number_format($total, 2)
+            ]) . "\n";
+        }
+        
+        $fileName = 'orders-export-' . date('Y-m-d') . '.csv';
+        
+        return response($csv)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 }

@@ -14,6 +14,14 @@ class Livraison extends Model
         'adresseLivraison',
         'dateLivraison',
         'statut',
+        'livreur_id',
+        'delivery_proof_photo',
+        'delivery_signature',
+        'delivery_notes',
+        'proof_uploaded_at',
+        'client_confirmed',
+        'client_confirmed_at',
+        'client_confirmation_notes',
     ];
 
     public function order()
@@ -24,5 +32,10 @@ class Livraison extends Model
     public function client()
     {
         return $this->belongsTo(User::class, 'idClient');
+    }
+
+    public function livreur()
+    {
+        return $this->belongsTo(User::class, 'livreur_id');
     }
 }

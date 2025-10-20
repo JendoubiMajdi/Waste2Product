@@ -22,9 +22,13 @@
                     <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Product #{{ $product->id }}</h5>
                         <div>
-                            <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-light me-1">
-                                <i class="bi bi-pencil"></i> Edit
-                            </a>
+                            @auth
+                                @if(Auth::user()->isAdmin() || (isset($product->waste->user_id) && $product->waste->user_id === Auth::id()))
+                                    <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-light me-1">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                @endif
+                            @endauth
                             <a href="{{ route('products.index') }}" class="btn btn-sm btn-outline-light">
                                 <i class="bi bi-arrow-left"></i> Back
                             </a>
@@ -123,18 +127,22 @@
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="bi bi-trash me-1"></i>Delete
-                                </button>
-                            </form>
-                            <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">
-                                <i class="bi bi-pencil me-1"></i>Edit
-                            </a>
-                        </div>
+                        @auth
+                            @if(Auth::user()->isAdmin() || (isset($product->waste->user_id) && $product->waste->user_id === Auth::id()))
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                    <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </a>
+                                </div>
+                            @endif
+                        @endauth
 
                     </div>
                 </div>

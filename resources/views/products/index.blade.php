@@ -30,6 +30,9 @@
             </div>
         @endif
 
+        <!-- Search and Filters -->
+        @include('partials.product-search')
+
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -62,10 +65,15 @@
                                     </td>
                                     <td><strong>{{ number_format($product->prix, 2) }} TND</strong></td>
                                     <td>
-                                        @if($product->quantite > 10)
+                                        @php
+                                            $threshold = $product->stock_threshold ?? 10;
+                                        @endphp
+                                        @if($product->quantite > $threshold)
                                             <span class="badge bg-success">{{ $product->quantite }}</span>
                                         @elseif($product->quantite > 0)
-                                            <span class="badge bg-warning">{{ $product->quantite }}</span>
+                                            <span class="badge bg-warning" title="Low stock (threshold: {{ $threshold }})">
+                                                <i class="bi bi-exclamation-triangle"></i> {{ $product->quantite }}
+                                            </span>
                                         @else
                                             <span class="badge bg-danger">Out of Stock</span>
                                         @endif
@@ -93,16 +101,20 @@
                                         <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-outline-info" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this product?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        @auth
+                                            @if(Auth::user()->isAdmin() || (isset($product->waste->user_id) && $product->waste->user_id === Auth::id()))
+                                                <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this product?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endauth
                                     </td>
                                 </tr>
                             @empty

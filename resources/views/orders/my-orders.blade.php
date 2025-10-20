@@ -195,6 +195,15 @@
                         <a href="{{ route('orders.show', $order->id) }}" class="btn btn-primary btn-sm">
                             <i class="bi bi-eye me-1"></i>View Details
                         </a>
+                        <a href="{{ route('orders.invoice.download', $order->id) }}" class="btn btn-danger btn-sm">
+                            <i class="bi bi-file-pdf me-1"></i>Download PDF
+                        </a>
+                        
+                        @if($order->livraison && strtolower($order->statut) === 'in_delivery')
+                            <a href="{{ route('livraisons.show', $order->livraison->idLivraison) }}" class="btn btn-success btn-sm">
+                                <i class="bi bi-truck me-1"></i>Track Delivery
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

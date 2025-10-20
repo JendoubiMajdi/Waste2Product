@@ -94,8 +94,11 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
-                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-outline-info" title="View">
+                                        <a href="{{ route('orders.show', $order->id) }}" class="btn btn-sm btn-outline-info" title="View Details">
                                             <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('orders.invoice.download', $order->id) }}" class="btn btn-sm btn-outline-danger" title="Download PDF Invoice">
+                                            <i class="bi bi-file-pdf"></i>
                                         </a>
                                         @auth
                                             @if(auth()->user()->role === 'admin' || auth()->user()->role === 'collector')

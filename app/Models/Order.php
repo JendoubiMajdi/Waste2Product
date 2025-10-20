@@ -41,4 +41,9 @@ class Order extends Model
     {
         return $this->belongsTo(CollectionPoint::class, 'collection_point_id');
     }
+
+    public function livraison()
+    {
+        return $this->hasOne(Livraison::class, 'idOrder');
+    }
 }

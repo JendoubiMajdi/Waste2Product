@@ -124,6 +124,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Products
     Route::resource('products', ProductController::class);
+    Route::get('/products/export/data', [ProductController::class, 'export'])->name('products.export');
 
     // Wastes
     Route::post('/wastes/classify-image', [WasteController::class, 'classifyImage'])->name('wastes.classify');
@@ -131,6 +132,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Orders
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('orders.my-orders');
+    Route::get('/orders/{order}/invoice/download', [OrderController::class, 'downloadInvoice'])->name('orders.invoice.download');
+    Route::post('/orders/{order}/invoice/email', [OrderController::class, 'emailInvoice'])->name('orders.invoice.email');
+    Route::get('/orders/export/data', [OrderController::class, 'export'])->name('orders.export');
     Route::resource('orders', OrderController::class);
 
     // Collection Points
@@ -140,6 +144,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('collection_points', CollectionPointController::class);
 
     // Livraisons
+    Route::post('/livraisons/{livraison}/upload-proof', [LivraisonController::class, 'uploadProof'])->name('livraisons.uploadProof');
+    Route::post('/livraisons/{livraison}/confirm-receipt', [LivraisonController::class, 'confirmReceipt'])->name('livraisons.confirmReceipt');
+    Route::post('/livraisons/{livraison}/mark-delivered', [LivraisonController::class, 'markAsDelivered'])->name('livraisons.markDelivered');
     Route::resource('livraisons', LivraisonController::class);
 
     // Donations

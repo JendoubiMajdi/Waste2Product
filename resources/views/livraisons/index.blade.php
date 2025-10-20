@@ -72,6 +72,14 @@
                                         @auth
                                             @if(auth()->user()->role === 'transporter' || auth()->user()->role === 'admin')
                                                 @if($livraison->statut !== 'delivered')
+                                                    <!-- Mark as Delivered Button -->
+                                                    <form action="{{ route('livraisons.markDelivered', $livraison->idLivraison) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-success" title="Mark as Delivered" onclick="return confirm('Mark this delivery as delivered?')">
+                                                            <i class="bi bi-check-circle"></i>
+                                                        </button>
+                                                    </form>
+                                                    
                                                     <a href="{{ route('livraisons.edit', $livraison->idLivraison) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>

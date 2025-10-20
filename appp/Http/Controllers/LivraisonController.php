@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Livraison;
+use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LivraisonController extends Controller
 {
@@ -90,4 +92,103 @@ class LivraisonController extends Controller
 
         return redirect()->route('livraisons.index')->with('success', 'Livraison supprimée avec succès.');
     }
+
+    /**
+     * Upload delivery proof (photo/signature)
+     */
+    public function uploadProof(Request $request, $id)
+    {
+        $livraison = Livraison::findOrFail($id);
+
+        // Check if user is the assigned transporter
+        if (Auth::id() !== $livraison->livreur_id) {
+            return redirect()->back()->with('error', 'You are not authorized to upload proof for this delivery.');
+        }
+
+        $validated = $request->validate([
+            'delivery_proof_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+            'delivery_signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'delivery_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Upload photo
+        if ($request->hasFile('delivery_proof_photo')) {
+            $photoPath = $request->file('delivery_proof_photo')->store('delivery-proofs', 'public');
+            $livraison->delivery_proof_photo = $photoPath;
+        }
+
+        // Upload signature
+        if ($request->hasFile('delivery_signature')) {
+            $signaturePath = $request->file('delivery_signature')->store('delivery-signatures', 'public');
+            $livraison->delivery_signature = $signaturePath;
+        }
+
+        // Save notes
+        if ($request->filled('delivery_notes')) {
+            $livraison->delivery_notes = $validated['delivery_notes'];
+        }
+
+        $livraison->proof_uploaded_at = now();
+        $livraison->save();
+
+        return redirect()->back()->with('success', 'Delivery proof uploaded successfully.');
+    }
+
+    /**
+     * Client confirms receipt of delivery
+     */
+    public function confirmReceipt(Request $request, $id)
+    {
+        $livraison = Livraison::findOrFail($id);
+
+        // Check if user is the client who ordered
+        if (Auth::id() !== $livraison->idClient) {
+            return redirect()->back()->with('error', 'You are not authorized to confirm this delivery.');
+        }
+
+        $validated = $request->validate([
+            'client_confirmation_notes' => 'nullable|string|max:500',
+        ]);
+
+        $livraison->client_confirmed = true;
+        $livraison->client_confirmed_at = now();
+        $livraison->client_confirmation_notes = $validated['client_confirmation_notes'] ?? null;
+        $livraison->statut = 'delivered';
+        $livraison->save();
+
+        // Update order status
+        $order = Order::find($livraison->idOrder);
+        if ($order) {
+            $order->statut = 'delivered';
+            $order->save();
+        }
+
+        return redirect()->back()->with('success', 'Thank you for confirming the delivery receipt!');
+    }
+
+    /**
+     * Mark delivery as delivered (Admin/Transporter)
+     */
+    public function markAsDelivered($id)
+    {
+        $livraison = Livraison::findOrFail($id);
+
+        // Only admin or assigned transporter can mark as delivered
+        if (Auth::user()->role !== 'admin' && Auth::id() !== $livraison->livreur_id) {
+            return redirect()->back()->with('error', 'You are not authorized to mark this delivery as delivered.');
+        }
+
+        $livraison->statut = 'delivered';
+        $livraison->save();
+
+        // Update order status
+        $order = Order::find($livraison->idOrder);
+        if ($order) {
+            $order->statut = 'delivered';
+            $order->save();
+        }
+
+        return redirect()->back()->with('success', 'Delivery marked as delivered successfully!');
+    }
 }
+
