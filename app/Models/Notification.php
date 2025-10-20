@@ -10,11 +10,12 @@ class Notification extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'type', 'message', 'related_id', 'is_read',
+        'user_id', 'type', 'data', 'read_at',
     ];
 
     protected $casts = [
-        'is_read' => 'boolean',
+        'data' => 'array',
+        'read_at' => 'datetime',
     ];
 
     public function user()
@@ -22,8 +23,17 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function post()
+    // Mark notification as read
+    public function markAsRead()
     {
-        return $this->belongsTo(Post::class, 'related_id');
+        if (!$this->read_at) {
+            $this->update(['read_at' => now()]);
+        }
+    }
+
+    // Check if notification is unread
+    public function isUnread()
+    {
+        return is_null($this->read_at);
     }
 }

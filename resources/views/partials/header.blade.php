@@ -475,6 +475,12 @@
                     <div class="resources-layout">
                       <div class="resource-categories">
                         <div class="resource-category">
+                          <i class="bi bi-people-fill"></i>
+                          <h5>Social Feed</h5>
+                          <p>Share posts and connect with friends in the community.</p>
+                          <a href="{{ route('posts.index') }}" class="resource-link">View Feed <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                        <div class="resource-category">
                           <i class="bi bi-chat-dots"></i>
                           <h5>Discussion Feed</h5>
                           <p>Browse and participate in community discussions about sustainability.</p>
@@ -518,7 +524,135 @@
         <!-- Conditional CTA: show Register on login page, Login on register page, Login on other pages -->
         <div class="d-none d-md-block ms-3">
           @auth
+            <div class="d-flex align-items-center gap-3">
+            <!-- Social Icons (Friends, Messages, Notifications) -->
+            <div class="d-flex align-items-center gap-2">
+              <!-- Friends -->
+              <a href="{{ route('friends.index') }}" class="social-icon-btn position-relative" title="Friends">
+                <i class="bi bi-people-fill"></i>
+                @if(Auth::user()->pendingFriendRequests()->count() > 0)
+                <span class="badge-notification">{{ Auth::user()->pendingFriendRequests()->count() }}</span>
+                @endif
+              </a>
+
+              <!-- Messages -->
+              <a href="{{ route('messages.index') }}" class="social-icon-btn position-relative" title="Messages">
+                <i class="bi bi-chat-dots-fill"></i>
+                @if(Auth::user()->unreadMessagesCount() > 0)
+                <span class="badge-notification">{{ Auth::user()->unreadMessagesCount() }}</span>
+                @endif
+              </a>
+
+              <!-- Notifications -->
+              <div class="dropdown">
+                <button class="social-icon-btn position-relative" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                  <i class="bi bi-bell-fill"></i>
+                  @if(Auth::user()->unreadNotificationsCount() > 0)
+                  <span class="badge-notification">{{ Auth::user()->unreadNotificationsCount() }}</span>
+                  @endif
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notificationsDropdown" style="min-width: 320px; max-height: 400px; overflow-y: auto;">
+                  <li class="dropdown-header d-flex justify-content-between align-items-center">
+                    <span>Notifications</span>
+                    @if(Auth::user()->unreadNotificationsCount() > 0)
+                    <form action="{{ route('notifications.read-all') }}" method="POST" class="d-inline">
+                      @csrf
+                      <button type="submit" class="btn btn-link btn-sm p-0" style="font-size: 12px;">Mark all read</button>
+                    </form>
+                    @endif
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  @php
+                    $recentNotifications = Auth::user()->notifications()->take(5)->get();
+                  @endphp
+                  @forelse($recentNotifications as $notification)
+                    @php
+                      $data = json_decode($notification->data, true);
+                    @endphp
+                    <li>
+                      <a class="dropdown-item {{ $notification->read_at ? '' : 'unread-notification' }}" href="#" 
+                         onclick="markNotificationRead({{ $notification->id }}); return false;">
+                        <div class="d-flex align-items-start gap-2">
+                          <i class="bi 
+                            @if($notification->type == 'friend_request') bi-person-plus-fill text-primary
+                            @elseif($notification->type == 'friend_accepted') bi-check-circle-fill text-success
+                            @elseif($notification->type == 'message') bi-chat-fill text-info
+                            @elseif($notification->type == 'ban') bi-x-circle-fill text-danger
+                            @else bi-bell-fill text-secondary
+                            @endif"></i>
+                          <div class="flex-grow-1">
+                            <small class="d-block text-muted" style="font-size: 11px;">{{ $notification->created_at->diffForHumans() }}</small>
+                            <p class="mb-0" style="font-size: 13px;">{{ $data['message'] ?? 'New notification' }}</p>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  @empty
+                    <li class="text-center py-3 text-muted">
+                      <i class="bi bi-bell-slash"></i>
+                      <p class="mb-0">No notifications</p>
+                    </li>
+                  @endforelse
+                  @if($recentNotifications->count() > 0)
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-center small" href="{{ route('notifications.index') }}">View all notifications</a></li>
+                  @endif
+                </ul>
+              </div>
+            </div><!-- End Social Icons -->
+
             <style>
+              .social-icon-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #374151;
+                font-size: 18px;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+              }
+              
+              .social-icon-btn:hover {
+                background: white;
+                color: #00927E;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+                transform: translateY(-2px);
+              }
+              
+              .badge-notification {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: #ef4444;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                border: 2px solid #000;
+              }
+
+              .notifications-dropdown .dropdown-item {
+                padding: 12px 16px;
+                white-space: normal;
+              }
+
+              .notifications-dropdown .unread-notification {
+                background-color: rgba(0, 146, 126, 0.05);
+                border-left: 3px solid #00927E;
+              }
+
+              .notifications-dropdown .dropdown-item:hover {
+                background-color: rgba(0, 146, 126, 0.1);
+              }
+              
               .user-dropdown-btn {
                 background: rgba(255, 255, 255, 0.95);
                 border: 1px solid rgba(0, 0, 0, 0.1);
@@ -664,7 +798,7 @@
                   My Progress
                 </a></li>
                 
-                <li><a class="dropdown-item" href="#">
+                <li><a class="dropdown-item" href="{{ route('profile.show', Auth::user()->id) }}">
                   <i class="bi bi-person"></i>
                   Profile
                 </a></li>
@@ -693,7 +827,8 @@
                   </form>
                 </li>
               </ul>
-            </div>
+            </div><!-- End User Dropdown -->
+            </div><!-- End Auth Wrapper -->
           @else
             @if(request()->is('login'))
               <a href="{{ route('register') }}" class="cta-btn">Register <i class="bi bi-arrow-right"></i></a>
@@ -710,3 +845,26 @@
     </div>
 
   </header>
+
+  <!-- Notification marking script -->
+  @auth
+  <script>
+    function markNotificationRead(notificationId) {
+      fetch(`/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Reload to update counts
+          location.reload();
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  </script>
+  @endauth

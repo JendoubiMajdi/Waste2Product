@@ -8,6 +8,12 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Waste;
+use App\Models\PostReport;
+use App\Models\Post;
+use App\Models\Event;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
@@ -33,6 +39,8 @@ class AdminDashboardController extends Controller
             'revenue_growth' => 12.5, // TODO: Calculate actual growth
             'total_waste' => Waste::sum('quantite') ?? 0,
             'waste_growth' => $this->calculateGrowth(Waste::class, 'quantite'),
+            'pending_reports' => PostReport::where('status', 'pending')->count(),
+            'banned_users' => User::whereNotNull('banned_until')->where('banned_until', '>', now())->count(),
         ];
 
         // Recent Orders
@@ -121,5 +129,124 @@ class AdminDashboardController extends Controller
             'labels' => $labels,
             'data' => $data,
         ];
+    }
+
+    // Post Reports Management
+    public function reports()
+    {
+        $reports = PostReport::with(['post.user', 'reporter'])
+            ->orderBy('status', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+            
+        return view('admin.post-reports.index', compact('reports'));
+    }
+
+    public function showReport($id)
+    {
+        $report = PostReport::with(['post.user', 'reporter'])->findOrFail($id);
+        return view('admin.post-reports.show', compact('report'));
+    }
+
+    public function banUser(Request $request, $reportId)
+    {
+        $request->validate([
+            'ban_duration' => 'required|integer|min:1|max:365',
+            'ban_reason' => 'required|string|max:500',
+        ]);
+
+        $report = PostReport::with('post.user')->findOrFail($reportId);
+        $user = $report->post->user;
+
+        // Calculate ban expiration - cast to int explicitly
+        $banDays = (int) $request->ban_duration;
+        $bannedUntil = Carbon::now()->addDays($banDays);
+
+        // Update user
+        $user->update([
+            'banned_until' => $bannedUntil,
+            'ban_reason' => $request->ban_reason,
+        ]);
+
+        // Update report status
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => "User banned for {$request->ban_duration} days. Reason: {$request->ban_reason}",
+        ]);
+
+        // Create notification for banned user
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => 'ban',
+            'data' => json_encode([
+                'message' => "You have been banned until " . $bannedUntil->format('M d, Y') . ". Reason: {$request->ban_reason}",
+                'banned_until' => $bannedUntil->toDateTimeString(),
+                'reason' => $request->ban_reason,
+            ]),
+        ]);
+
+        return back()->with('success', "User {$user->name} has been banned for {$request->ban_duration} days.");
+    }
+
+    public function resolveReport(Request $request, $reportId)
+    {
+        $request->validate([
+            'admin_notes' => 'nullable|string|max:1000',
+            'action' => 'required|in:dismiss,warning',
+        ]);
+
+        $report = PostReport::findOrFail($reportId);
+
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => $request->admin_notes ?? 'Report reviewed and ' . $request->action . ' applied.',
+        ]);
+
+        if ($request->action === 'warning') {
+            // Create warning notification for post author
+            Notification::create([
+                'user_id' => $report->post->user_id,
+                'type' => 'warning',
+                'data' => json_encode([
+                    'message' => 'Your post has been reported and reviewed. Please follow community guidelines.',
+                    'post_id' => $report->post_id,
+                ]),
+            ]);
+        }
+
+        return back()->with('success', 'Report has been resolved.');
+    }
+
+    public function deletePost($reportId)
+    {
+        $report = PostReport::with('post')->findOrFail($reportId);
+        $post = $report->post;
+
+        if ($post) {
+            // Create notification for post author
+            Notification::create([
+                'user_id' => $post->user_id,
+                'type' => 'warning',
+                'data' => json_encode([
+                    'message' => 'Your post has been removed by administrators for violating community guidelines.',
+                ]),
+            ]);
+
+            $post->delete();
+        }
+
+        $report->update([
+            'status' => 'resolved',
+            'admin_notes' => 'Post deleted by administrator.',
+        ]);
+
+        return back()->with('success', 'Post has been deleted and user notified.');
+    }
+
+    // Event Management
+    public function events()
+    {
+        $events = Event::orderBy('date', 'desc')->paginate(20);
+        return view('admin.events.index', compact('events'));
     }
 }

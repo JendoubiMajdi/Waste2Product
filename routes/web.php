@@ -81,6 +81,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     });
 });
 
+// Chatbot Routes (available to all users - authenticated and guest)
+Route::get('/chatbot', [App\Http\Controllers\ChatbotController::class, 'index'])->name('chatbot');
+Route::post('/chatbot/send', [App\Http\Controllers\ChatbotController::class, 'sendMessage'])->name('chatbot.send');
+Route::post('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
+
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     // Home/Dashboard
@@ -168,6 +173,16 @@ Route::middleware(['auth'])->group(function () {
 // Admin Backoffice Routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Post Reports Management
+    Route::get('/post-reports', [App\Http\Controllers\Admin\AdminDashboardController::class, 'reports'])->name('post-reports');
+    Route::get('/post-reports/{id}', [App\Http\Controllers\Admin\AdminDashboardController::class, 'showReport'])->name('post-reports.show');
+    Route::post('/post-reports/{id}/ban', [App\Http\Controllers\Admin\AdminDashboardController::class, 'banUser'])->name('post-reports.ban');
+    Route::post('/post-reports/{id}/resolve', [App\Http\Controllers\Admin\AdminDashboardController::class, 'resolveReport'])->name('post-reports.resolve');
+    Route::delete('/post-reports/{id}/delete-post', [App\Http\Controllers\Admin\AdminDashboardController::class, 'deletePost'])->name('post-reports.delete-post');
+
+    // Events Management
+    Route::get('/events-management', [App\Http\Controllers\Admin\AdminDashboardController::class, 'events'])->name('events-management');
 
     // Users Management
     Route::get('/users', function () {
@@ -463,10 +478,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         return back()->with('success', 'Submission rejected successfully!');
     })->name('submissions.reject');
 
-    // Reports
-    Route::get('/reports', function () {
-        return view('admin.reports.index');
-    })->name('reports');
+    // Reports - Old analytics page (disabled, using post-reports instead)
+    // Route::get('/reports', function () {
+    //     return view('admin.reports.index');
+    // })->name('reports');
 
     // Settings
     Route::get('/settings', function () {
@@ -477,4 +492,50 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/profile', function () {
         return view('admin.profile.index');
     })->name('profile');
+
+    // Forum Management
+    Route::get('/forum', [App\Http\Controllers\Admin\AdminForumController::class, 'index'])->name('forum.index');
+    Route::get('/forum/reports', [App\Http\Controllers\Admin\AdminForumController::class, 'reports'])->name('forum.reports');
+    Route::post('/forum/reports/{report}/resolve', [App\Http\Controllers\Admin\AdminForumController::class, 'resolveReport'])->name('forum.reports.resolve');
+    Route::post('/forum/users/{user}/ban', [App\Http\Controllers\Admin\AdminForumController::class, 'banUser'])->name('forum.users.ban');
+    Route::post('/forum/users/{user}/unban', [App\Http\Controllers\Admin\AdminForumController::class, 'unbanUser'])->name('forum.users.unban');
+    Route::get('/forum/banned-users', [App\Http\Controllers\Admin\AdminForumController::class, 'bannedUsers'])->name('forum.banned');
+});
+
+// Friend System Routes (Protected by auth and ban check)
+Route::middleware(['auth', 'check.banned'])->group(function () {
+    // Friendships
+    Route::post('/friends/request', [App\Http\Controllers\FriendshipController::class, 'sendRequest'])->name('friends.request');
+    Route::post('/friends/{friendship}/accept', [App\Http\Controllers\FriendshipController::class, 'acceptRequest'])->name('friends.accept');
+    Route::post('/friends/{friendship}/deny', [App\Http\Controllers\FriendshipController::class, 'denyRequest'])->name('friends.deny');
+    Route::delete('/friends/{friend}/remove', [App\Http\Controllers\FriendshipController::class, 'removeFriend'])->name('friends.remove');
+    Route::get('/friends', [App\Http\Controllers\FriendshipController::class, 'index'])->name('friends.index');
+    
+    // Blocking
+    Route::post('/users/block', [App\Http\Controllers\FriendshipController::class, 'blockUser'])->name('users.block');
+    Route::delete('/users/{user}/unblock', [App\Http\Controllers\FriendshipController::class, 'unblockUser'])->name('users.unblock');
+
+    // Messaging
+    Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{user}', [App\Http\Controllers\MessageController::class, 'show'])->name('messages.show');
+    Route::post('/messages/send', [App\Http\Controllers\MessageController::class, 'send'])->name('messages.send');
+    Route::post('/messages/{conversation}/read', [App\Http\Controllers\MessageController::class, 'markAsRead'])->name('messages.read');
+
+    // User Profile
+    Route::get('/profile/{user}', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+
+    // Posts
+    Route::get('/posts', [App\Http\Controllers\PostController::class, 'index'])->name('posts.index');
+    Route::post('/posts', [App\Http\Controllers\PostController::class, 'store'])->name('posts.store');
+    Route::post('/posts/share', [App\Http\Controllers\PostController::class, 'shareToFeed'])->name('posts.share');
+    Route::delete('/posts/{post}', [App\Http\Controllers\PostController::class, 'destroy'])->name('posts.destroy');
+
+    // Post Reports
+    Route::post('/posts/report', [App\Http\Controllers\PostReportController::class, 'store'])->name('posts.report');
+
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::get('/notifications/count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.count');
 });

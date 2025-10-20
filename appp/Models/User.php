@@ -109,4 +109,117 @@ class User extends Authenticatable implements MustVerifyEmail
             default => 'patch-check-fill', // beginner
         };
     }
+
+    // ========================================
+    // Social Networking Methods
+    // ========================================
+
+    /**
+     * Get user's friends (accepted friendships)
+     */
+    public function friends()
+    {
+        $friendIds1 = Friendship::where('user_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('friend_id');
+
+        $friendIds2 = Friendship::where('friend_id', $this->id)
+            ->where('status', 'accepted')
+            ->pluck('user_id');
+
+        $allFriendIds = $friendIds1->merge($friendIds2)->unique();
+
+        return self::whereIn('id', $allFriendIds)->get();
+    }
+
+    /**
+     * Get pending friend requests received by this user
+     */
+    public function pendingFriendRequests()
+    {
+        return Friendship::where('friend_id', $this->id)
+            ->where('status', 'pending')
+            ->with('user')
+            ->get();
+    }
+
+    /**
+     * Check if this user is friends with another user
+     */
+    public function isFriendsWith($userId): bool
+    {
+        return Friendship::where(function ($query) use ($userId) {
+            $query->where('user_id', $this->id)->where('friend_id', $userId);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('user_id', $userId)->where('friend_id', $this->id);
+        })->where('status', 'accepted')->exists();
+    }
+
+    /**
+     * Check if this user has blocked another user
+     */
+    public function hasBlocked($userId): bool
+    {
+        return BlockedUser::where('user_id', $this->id)
+            ->where('blocked_user_id', $userId)
+            ->exists();
+    }
+
+    /**
+     * Check if this user is blocked by another user
+     */
+    public function isBlockedBy($userId): bool
+    {
+        return BlockedUser::where('user_id', $userId)
+            ->where('blocked_user_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Get unread messages count
+     */
+    public function unreadMessagesCount(): int
+    {
+        return Message::where('receiver_id', $this->id)
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function unreadNotificationsCount(): int
+    {
+        return Notification::where('user_id', $this->id)
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    /**
+     * Get user's posts
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get user's notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get user's conversations
+     */
+    public function conversations()
+    {
+        return Conversation::where('user1_id', $this->id)
+            ->orWhere('user2_id', $this->id)
+            ->with(['user1', 'user2', 'lastMessage'])
+            ->latest('updated_at')
+            ->get();
+    }
 }

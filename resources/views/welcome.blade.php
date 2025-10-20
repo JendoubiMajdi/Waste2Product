@@ -20,6 +20,49 @@
         @endif
     </head>
     <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
+        <!-- Ban Notification -->
+        @if(session('ban_info'))
+        <div class="w-full lg:max-w-4xl max-w-[335px] mb-6">
+            <div class="bg-[#fff2f2] dark:bg-[#1D0002] border border-[#F53003] dark:border-[#F61500] rounded-lg p-6" role="alert">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-[#F53003] dark:text-[#F61500]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-[#F53003] dark:text-[#F61500] font-medium mb-2">Account Temporarily Banned</h3>
+                        <p class="mb-2"><strong>Banned Until:</strong> {{ \Carbon\Carbon::parse(session('ban_info')['banned_until'])->format('F j, Y \a\t g:i A') }}</p>
+                        <p class="mb-2"><strong>Reason:</strong> {{ session('ban_info')['reason'] }}</p>
+                        <p class="text-sm text-[#706f6c] dark:text-[#A1A09A] mb-0">You will regain access to your account after the ban period expires. Please follow our community guidelines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @auth
+        @if(Auth::user()->banned_until && Auth::user()->banned_until->isFuture())
+        <div class="w-full lg:max-w-4xl max-w-[335px] mb-6">
+            <div class="bg-[#fff2f2] dark:bg-[#1D0002] border border-[#F53003] dark:border-[#F61500] rounded-lg p-6" role="alert">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-[#F53003] dark:text-[#F61500]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-[#F53003] dark:text-[#F61500] font-medium mb-2">Account Temporarily Banned</h3>
+                        <p class="mb-2"><strong>Banned Until:</strong> {{ Auth::user()->banned_until->format('F j, Y \a\t g:i A') }}</p>
+                        <p class="mb-2"><strong>Reason:</strong> {{ Auth::user()->ban_reason }}</p>
+                        <p class="text-sm text-[#706f6c] dark:text-[#A1A09A] mb-0">You cannot access most features while banned. Please follow our community guidelines.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+        @endauth
+
         <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">

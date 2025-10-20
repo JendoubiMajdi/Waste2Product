@@ -229,4 +229,212 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return $nextThreshold - $this->points;
     }
+
+    // ==================== FRIENDSHIP METHODS ====================
+    
+    /**
+     * Get all friendships where this user is the initiator
+     */
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    /**
+     * Get all friendships where this user received the request
+     */
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'friend_id');
+    }
+
+    /**
+     * Get all accepted friends
+     */
+    public function friends()
+    {
+        $sentFriends = $this->sentFriendRequests()
+            ->where('status', 'accepted')
+            ->with('friend')
+            ->get()
+            ->pluck('friend');
+
+        $receivedFriends = $this->receivedFriendRequests()
+            ->where('status', 'accepted')
+            ->with('user')
+            ->get()
+            ->pluck('user');
+
+        return $sentFriends->merge($receivedFriends);
+    }
+
+    /**
+     * Get pending friend requests (received)
+     */
+    public function pendingFriendRequests()
+    {
+        return $this->receivedFriendRequests()
+            ->where('status', 'pending')
+            ->with('user')
+            ->get();
+    }
+
+    /**
+     * Check if user is friends with another user
+     */
+    public function isFriendsWith($userId)
+    {
+        return Friendship::where(function ($query) use ($userId) {
+            $query->where('user_id', $this->id)->where('friend_id', $userId);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('user_id', $userId)->where('friend_id', $this->id);
+        })->where('status', 'accepted')->exists();
+    }
+
+    /**
+     * Check if user has sent friend request to another user
+     */
+    public function hasSentFriendRequestTo($userId)
+    {
+        return $this->sentFriendRequests()
+            ->where('friend_id', $userId)
+            ->where('status', 'pending')
+            ->exists();
+    }
+
+    /**
+     * Check if user has received friend request from another user
+     */
+    public function hasReceivedFriendRequestFrom($userId)
+    {
+        return $this->receivedFriendRequests()
+            ->where('user_id', $userId)
+            ->where('status', 'pending')
+            ->exists();
+    }
+
+    /**
+     * Check if user has blocked another user
+     */
+    public function hasBlocked($userId)
+    {
+        return BlockedUser::where('user_id', $this->id)
+            ->where('blocked_user_id', $userId)
+            ->exists();
+    }
+
+    /**
+     * Check if user is blocked by another user
+     */
+    public function isBlockedBy($userId)
+    {
+        return BlockedUser::where('user_id', $userId)
+            ->where('blocked_user_id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Get list of blocked users
+     */
+    public function blockedUsers()
+    {
+        return $this->hasMany(BlockedUser::class, 'user_id');
+    }
+
+    // ==================== MESSAGING METHODS ====================
+    
+    /**
+     * Get all conversations
+     */
+    public function conversations()
+    {
+        return Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id)
+            ->with(['userOne', 'userTwo', 'latestMessage'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Get conversation with specific user
+     */
+    public function conversationWith($userId)
+    {
+        return Conversation::where(function ($query) use ($userId) {
+            $query->where('user_one_id', $this->id)->where('user_two_id', $userId);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('user_one_id', $userId)->where('user_two_id', $this->id);
+        })->first();
+    }
+
+    /**
+     * Get unread messages count
+     */
+    public function unreadMessagesCount()
+    {
+        $conversationIds = Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id)
+            ->pluck('id');
+
+        return Message::whereIn('conversation_id', $conversationIds)
+            ->where('sender_id', '!=', $this->id)
+            ->whereNull('read_at')
+            ->count();
+    }
+
+    // ==================== NOTIFICATION METHODS ====================
+    
+    /**
+     * Get user notifications
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->whereNull('read_at')->count();
+    }
+
+    // ==================== BAN METHODS ====================
+    
+    /**
+     * Get active ban
+     */
+    public function activeBan()
+    {
+        return $this->hasOne(UserBan::class, 'user_id')
+            ->where('banned_until', '>', now())
+            ->latest();
+    }
+
+    /**
+     * Check if user is banned
+     */
+    public function isBanned()
+    {
+        return UserBan::where('user_id', $this->id)
+            ->where('banned_until', '>', now())
+            ->exists();
+    }
+
+    /**
+     * Get ban history
+     */
+    public function bans()
+    {
+        return $this->hasMany(UserBan::class, 'user_id');
+    }
+
+    /**
+     * Get post reports made by user
+     */
+    public function reportsMade()
+    {
+        return $this->hasMany(PostReport::class, 'user_id');
+    }
 }

@@ -156,11 +156,15 @@ class EventController extends Controller
             'description' => 'required|string',
             'location' => 'required|string|max:255',
             'event_date' => 'required|date',
-            'event_time' => 'required|date_format:H:i',
             'max_participants' => 'nullable|integer|min:1',
-            'status' => 'required|in:active,cancelled,completed',
+            'status' => 'nullable|in:active,cancelled,completed',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
+        // Split datetime-local into date and time
+        $datetime = new \DateTime($request->event_date);
+        $validated['event_date'] = $datetime->format('Y-m-d');
+        $validated['event_time'] = $datetime->format('H:i:s');
 
         if ($request->hasFile('image')) {
             $imageData = base64_encode(file_get_contents($request->file('image')->getRealPath()));

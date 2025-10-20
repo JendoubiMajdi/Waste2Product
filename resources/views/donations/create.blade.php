@@ -47,7 +47,7 @@
                             </div>
 
                             <div class="mb-3" id="amountField" style="display: none;">
-                                <label for="amount" class="form-label">Amount ($)</label>
+                                <label for="amount" class="form-label">Amount (TND)</label>
                                 <input type="number" class="form-control @error('amount') is-invalid @enderror" 
                                        id="amount" name="amount" value="{{ old('amount') }}" 
                                        step="0.01" min="0" placeholder="0.00">

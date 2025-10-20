@@ -61,6 +61,41 @@
         </div>
     </div>
 
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545;">
+                <span class="iconify" data-icon="mdi:flag"></span>
+            </div>
+            <div class="stat-label">Pending Reports</div>
+            <div class="stat-value">{{ number_format($stats['pending_reports']) }}</div>
+            @if($stats['pending_reports'] > 0)
+            <div class="stat-change" style="color: #dc3545;">
+                <span class="iconify" data-icon="mingcute:alert-fill"></span>
+                <a href="{{ route('admin.post-reports') }}" class="text-decoration-none" style="color: #dc3545;">Review Now</a>
+            </div>
+            @else
+            <div class="stat-change" style="color: #17ae13;">
+                <span class="iconify" data-icon="mingcute:check-fill"></span>
+                All Clear
+            </div>
+            @endif
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background-color: rgba(108, 117, 125, 0.1); color: #6c757d;">
+                <span class="iconify" data-icon="mdi:account-cancel"></span>
+            </div>
+            <div class="stat-label">Banned Users</div>
+            <div class="stat-value">{{ number_format($stats['banned_users']) }}</div>
+            <div class="stat-change">
+                <span class="iconify" data-icon="mingcute:information-fill"></span>
+                Currently banned
+            </div>
+        </div>
+    </div>
+
     <!-- Sales Chart -->
     <div class="col-12 col-xl-8">
         <div class="admin-card">
@@ -104,8 +139,16 @@
                         <span><span class="iconify me-2" data-icon="mdi:map-marker-multiple"></span>Collection Points</span>
                         <span class="iconify" data-icon="mingcute:right-line"></span>
                     </a>
-                    <a href="{{ route('admin.reports') }}" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
-                        <span><span class="iconify me-2" data-icon="lucide:line-chart"></span>View Reports</span>
+                    <a href="{{ route('admin.post-reports') }}" class="btn btn-outline-danger d-flex align-items-center justify-content-between">
+                        <span><span class="iconify me-2" data-icon="mdi:flag"></span>Post Reports
+                        @if($stats['pending_reports'] > 0)
+                            <span class="badge bg-danger ms-2">{{ $stats['pending_reports'] }}</span>
+                        @endif
+                        </span>
+                        <span class="iconify" data-icon="mingcute:right-line"></span>
+                    </a>
+                    <a href="{{ route('admin.events-management') }}" class="btn btn-outline-primary d-flex align-items-center justify-content-between">
+                        <span><span class="iconify me-2" data-icon="mdi:calendar-event"></span>Events Management</span>
                         <span class="iconify" data-icon="mingcute:right-line"></span>
                     </a>
                 </div>

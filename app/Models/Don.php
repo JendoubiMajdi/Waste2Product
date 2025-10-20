@@ -9,8 +9,14 @@ class Don extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id', 'type', 'amount', 'description', 'status',
+        protected $fillable = [
+        'user_id',
+        'type',
+        'amount',
+        'description',
+        'image',
+        'status',
+        'rejection_reason',
     ];
 
     public function user()

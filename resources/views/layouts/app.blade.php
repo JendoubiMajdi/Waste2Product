@@ -113,5 +113,8 @@
   <script src="/assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
   <script src="/assets/js/main.js"></script>
   @stack('scripts')
+
+  <!-- LABIB Chatbot Button -->
+  @include('components.chat-button')
 </body>
 </html>

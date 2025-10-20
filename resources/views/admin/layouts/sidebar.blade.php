@@ -48,9 +48,22 @@
             </li>
 
             <li class="nav-item">
-                <a href="{{ route('admin.reports') }}" class="nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}">
-                    <span class="iconify" data-icon="lucide:line-chart"></span>
-                    <span>Reports</span>
+                <a href="{{ route('admin.post-reports') }}" class="nav-link {{ request()->routeIs('admin.post-reports*') ? 'active' : '' }}">
+                    <span class="iconify" data-icon="mdi:flag"></span>
+                    <span>Post Reports</span>
+                    @php
+                        $pendingReports = \App\Models\PostReport::where('status', 'pending')->count();
+                    @endphp
+                    @if($pendingReports > 0)
+                        <span class="badge bg-danger ms-2">{{ $pendingReports }}</span>
+                    @endif
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.forum.index') }}" class="nav-link {{ request()->routeIs('admin.forum*') ? 'active' : '' }}">
+                    <span class="iconify" data-icon="mdi:chart-line"></span>
+                    <span>Forum Analytics</span>
                 </a>
             </li>
 
@@ -62,9 +75,23 @@
             </li>
 
             <li class="nav-item">
+                <a href="{{ route('admin.events-management') }}" class="nav-link {{ request()->routeIs('admin.events-management*') ? 'active' : '' }}">
+                    <span class="iconify" data-icon="mdi:calendar-event"></span>
+                    <span>Events</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a href="{{ route('admin.submissions') }}" class="nav-link {{ request()->routeIs('admin.submissions*') ? 'active' : '' }}">
                     <span class="iconify" data-icon="mdi:file-check-outline"></span>
                     <span>Submissions</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.donations.index') }}" class="nav-link {{ request()->routeIs('admin.donations*') ? 'active' : '' }}">
+                    <span class="iconify" data-icon="mdi:hand-heart-outline"></span>
+                    <span>Donation Approvals</span>
                 </a>
             </li>
 

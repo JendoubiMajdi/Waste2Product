@@ -10,24 +10,13 @@ use Illuminate\Support\Facades\Log;
 
 class ChallengeController extends Controller
 {
-    // Show today's challenge (randomly chosen per day) to normal users and collectors
+    // Show a random challenge to users
     public function index(Request $request)
     {
-        $today = now()->toDateString();
-
-        // Choose a deterministic "random" challenge for the day using hashing
-        $challenge = Challenge::where('status', 'active')->get()->whenNotEmpty(function ($list) use ($today) {
-            $index = hexdec(substr(md5($today), 0, 8)) % $list->count();
-
-            return $list->values()[$index];
-        }, function () {
-            return null;
-        });
-
-        // If a single model was returned via whenNotEmpty then ensure $challenge is a model
-        if ($challenge instanceof \Illuminate\Support\Collection) {
-            $challenge = $challenge->first();
-        }
+        // Get a truly random active challenge for each user
+        $challenge = Challenge::where('status', 'active')
+            ->inRandomOrder()
+            ->first();
 
         $userSubmission = null;
         if (Auth::check() && $challenge) {

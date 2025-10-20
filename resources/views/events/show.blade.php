@@ -89,7 +89,7 @@
                                     <div>
                                         <small class="text-muted d-block">Date & Time</small>
                                         <strong>{{ $event->event_date->format('l, F j, Y') }}</strong><br>
-                                        <strong>{{ $event->event_date->format('h:i A') }}</strong>
+                                        <strong>{{ $event->event_date_time->format('h:i A') }}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -254,13 +254,23 @@
                         <div class="col-md-6 mb-3">
                             <label for="edit_event_date" class="form-label">Date & Time</label>
                             <input type="datetime-local" name="event_date" id="edit_event_date" 
-                                   class="form-control" value="{{ $event->event_date->format('Y-m-d\TH:i') }}" required>
+                                   class="form-control" value="{{ $event->event_date_time_local }}" required>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="edit_max_participants" class="form-label">Max Participants</label>
-                        <input type="number" name="max_participants" id="edit_max_participants" 
-                               class="form-control" value="{{ $event->max_participants }}" min="1" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_max_participants" class="form-label">Max Participants</label>
+                            <input type="number" name="max_participants" id="edit_max_participants" 
+                                   class="form-control" value="{{ $event->max_participants }}" min="1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_status" class="form-label">Status</label>
+                            <select name="status" id="edit_status" class="form-select" required>
+                                <option value="active" {{ $event->status === 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="completed" {{ $event->status === 'completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="cancelled" {{ $event->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="edit_image" class="form-label">Image</label>

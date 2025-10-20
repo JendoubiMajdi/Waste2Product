@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Index - Passion Template')
+@section('title', 'Home - Waste2Product')
 @section('bodyClass', 'index-page')
 
 @section('content')
@@ -18,28 +18,28 @@
           <div class="row align-items-center">
             <div class="col-lg-6">
               <div class="hero-content">
-                <span class="hero-badge">Innovative Solutions</span>
-                <h1>Transform Your Business with Modern Technology</h1>
+                <span class="hero-badge">Circular Economy Leader</span>
+                <h1>Transform Waste Into Value</h1>
                 <p>Waste2Product collects and recycles local waste to create usable materials and products, closing the loop toward a circular economy.</p>
                 <div class="hero-actions">
-                  <a href="#services" class="btn-primary">Explore Services</a>
-                  <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="btn-secondary glightbox">
-                    <i class="bi bi-play-circle"></i>
-                    <span>Watch Demo</span>
+                  <a href="{{ route('register') }}" class="btn-primary">Get Started</a>
+                  <a href="#how-we-work" class="btn-secondary">
+                    <i class="bi bi-info-circle"></i>
+                    <span>How It Works</span>
                   </a>
                 </div>
                 <div class="hero-stats">
                   <div class="stat-item">
-                    <span class="stat-number">500+</span>
-                    <span class="stat-label">Projects Completed</span>
+                    <span class="stat-number">{{ \App\Models\User::count() }}+</span>
+                    <span class="stat-label">Active Users</span>
                   </div>
                   <div class="stat-item">
-                    <span class="stat-number">98%</span>
-                    <span class="stat-label">Client Satisfaction</span>
+                    <span class="stat-number">{{ \App\Models\Waste::count() }}+</span>
+                    <span class="stat-label">Waste Collected</span>
                   </div>
                   <div class="stat-item">
-                    <span class="stat-number">24/7</span>
-                    <span class="stat-label">Support Available</span>
+                    <span class="stat-number">{{ \App\Models\Product::count() }}+</span>
+                    <span class="stat-label">Products Created</span>
                   </div>
                 </div>
               </div>
@@ -49,22 +49,22 @@
                 <div class="row g-3">
                   <div class="col-6">
                     <div class="feature-card">
-                      <i class="bi bi-shield-check"></i>
-                      <span>Secure &amp; Reliable</span>
+                      <i class="bi bi-recycle"></i>
+                      <span>Eco-Friendly</span>
                     </div>
                     <div class="feature-card">
-                      <i class="bi bi-people"></i>
-                      <span>Expert Team</span>
+                      <i class="bi bi-trophy"></i>
+                      <span>Earn Rewards</span>
                     </div>
                   </div>
                   <div class="col-6">
                     <div class="feature-card">
-                      <i class="bi bi-speedometer2"></i>
-                      <span>High Performance</span>
+                      <i class="bi bi-geo-alt"></i>
+                      <span>Easy Collection</span>
                     </div>
                     <div class="feature-card">
-                      <i class="bi bi-award"></i>
-                      <span>Award Winning</span>
+                      <i class="bi bi-cart-check"></i>
+                      <span>Buy Products</span>
                     </div>
                   </div>
                 </div>
@@ -83,50 +83,50 @@
           <div class="row align-items-center">
             <div class="col-lg-6">
               <div class="content">
-                <h2>Transforming Ideas Into Reality Since 2015</h2>
-                <p class="lead">We are a passionate team of innovators dedicated to creating exceptional digital experiences that drive meaningful results for businesses worldwide.</p>
-                <p>Our journey began with a simple vision: to bridge the gap between cutting-edge technology and human-centered design. Today, we've grown into a trusted partner for companies seeking to transform their digital presence and accelerate their growth.</p>
-                <p>Through collaborative partnerships and innovative solutions, we've helped hundreds of organizations achieve their goals while building lasting relationships founded on trust, transparency, and exceptional results.</p>
+                <h2>Building a Sustainable Future Together</h2>
+                <p class="lead">We are a community-driven platform dedicated to transforming waste management and promoting the circular economy through innovative recycling solutions.</p>
+                <p>Our mission began with a clear vision: to create a seamless connection between waste producers, collectors, and recyclers. By providing an accessible platform, we empower individuals and businesses to turn waste into valuable resources.</p>
+                <p>Through our comprehensive waste collection services, product marketplace, and community engagement programs, we're making environmental sustainability easy, rewarding, and impactful for everyone.</p>
 
                 <div class="stats-container">
                   <div class="row">
                     <div class="col-md-4">
                       <div class="stat-item">
-                        <div class="number">8+</div>
-                        <div class="label">Years Experience</div>
+                        <div class="number">{{ \App\Models\Waste::sum('quantite') ?? 0 }}kg</div>
+                        <div class="label">Waste Recycled</div>
                       </div>
                     </div>
                     <div class="col-md-4">
                       <div class="stat-item">
-                        <div class="number">450+</div>
-                        <div class="label">Projects Completed</div>
+                        <div class="number">{{ \App\Models\Product::count() }}+</div>
+                        <div class="label">Products Created</div>
                       </div>
                     </div>
                     <div class="col-md-4">
                       <div class="stat-item">
-                        <div class="number">25</div>
-                        <div class="label">Team Members</div>
+                        <div class="number">{{ \App\Models\CollectionPoint::count() }}</div>
+                        <div class="label">Collection Points</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div class="cta-wrapper">
-                  <a href="#portfolio" class="btn btn-primary">Discover Our Work</a>
-                  <a href="#team" class="btn btn-outline">Meet Our Team</a>
+                  <a href="{{ route('products.index') }}" class="btn btn-primary">Browse Products</a>
+                  <a href="{{ route('challenges.index') }}" class="btn btn-outline">Join Challenges</a>
                 </div>
               </div>
             </div>
 
             <div class="col-lg-6">
               <div class="image-wrapper">
-                <img src="assets/img/about/about-square-8.webp" alt="About Us" class="img-fluid main-image">
+                <img src="assets/img/about/about-square-8.webp" alt="About Waste2Product" class="img-fluid main-image">
                 <div class="floating-card">
                   <div class="card-content">
-                    <i class="bi bi-award"></i>
+                    <i class="bi bi-recycle"></i>
                     <div class="text">
-                      <h5>Excellence Award</h5>
-                      <span>Digital Innovation 2023</span>
+                      <h5>Eco Champion</h5>
+                      <span>Sustainability Leader 2025</span>
                     </div>
                   </div>
                 </div>
@@ -584,144 +584,142 @@
 
     </section><!-- /Clients Section -->
 
-    <!-- Featured Services Section -->
-    <section id="featured-services" class="featured-services section light-background">
+      <!-- Featured Services Section -->
+      <section id="featured-services" class="featured-services section light-background">
 
-      <!-- Section Title -->
-      <div class="container section-title">
-        <h2>Featured Services</h2>
-        <p>Featured Srvices</p>
-      </div><!-- End Section Title -->
+        <!-- Section Title -->
+        <div class="container section-title">
+          <h2>Our Services</h2>
+          <p>Complete Waste Management Solutions</p>
+        </div><!-- End Section Title -->
 
-      <div class="container">
+        <div class="container">
 
-        <div class="row">
-          <div class="col-lg-6">
-            <div class="services-content" data-aos-duration="900">
-              <span class="subtitle">Professional Services</span>
-              <h2>Elevating Business Performance Through Strategic Solutions</h2>
-              <p data-aos-duration="800">We provide collection logistics, material sorting, and recycling services that turn waste into high-quality feedstock and finished products.</p>
-              <div class="mt-4" data-aos-duration="1100">
-                <a href="#" class="btn-consultation"><span>Request a Consultation</span><i class="bi bi-arrow-right"></i></a>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="services-content" data-aos-duration="900">
+                <span class="subtitle">Waste2Product Services</span>
+                <h2>From Collection to Creation - Complete Recycling Solutions</h2>
+                <p data-aos-duration="800">We provide collection logistics, material sorting, and recycling services that turn waste into high-quality feedstock and finished products.</p>
+                <div class="mt-4" data-aos-duration="1100">
+                  <a href="{{ route('register') }}" class="btn-consultation"><span>Join Our Platform</span><i class="bi bi-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="services-image">
+                <img src="assets/img/services/services-9.webp" alt="Recycling Services" class="img-fluid">
+                <div class="shape-circle"></div>
+                <div class="shape-accent"></div>
               </div>
             </div>
           </div>
-          <div class="col-lg-6">
-            <div class="services-image">
-              <img src="assets/img/services/services-9.webp" alt="Business Services" class="img-fluid">
-              <div class="shape-circle"></div>
-              <div class="shape-accent"></div>
-            </div>
-          </div>
-        </div>
 
-        <div class="row mt-5" data-aos-duration="1000">
-          <div class="col-12">
-            <div class="services-slider swiper init-swiper">
-              <script type="application/json" class="swiper-config">
-                {
-                  "slidesPerView": 3,
-                  "spaceBetween": 20,
-                  "loop": true,
-                  "speed": 600,
-                  "autoplay": {
-                    "delay": 5000
-                  },
-                  "navigation": {
-                    "nextEl": ".swiper-nav-next",
-                    "prevEl": ".swiper-nav-prev"
-                  },
-                  "breakpoints": {
-                    "320": {
-                      "slidesPerView": 1
+          <div class="row mt-5" data-aos-duration="1000">
+            <div class="col-12">
+              <div class="services-slider swiper init-swiper">
+                <script type="application/json" class="swiper-config">
+                  {
+                    "slidesPerView": 3,
+                    "spaceBetween": 20,
+                    "loop": true,
+                    "speed": 600,
+                    "autoplay": {
+                      "delay": 5000
                     },
-                    "768": {
-                      "slidesPerView": 2
+                    "navigation": {
+                      "nextEl": ".swiper-nav-next",
+                      "prevEl": ".swiper-nav-prev"
                     },
-                    "992": {
-                      "slidesPerView": 3
+                    "breakpoints": {
+                      "320": {
+                        "slidesPerView": 1
+                      },
+                      "768": {
+                        "slidesPerView": 2
+                      },
+                      "992": {
+                        "slidesPerView": 3
+                      }
                     }
                   }
-                }
-              </script>
-              <div class="swiper-wrapper">
+                </script>
+                <div class="swiper-wrapper">
 
-                <div class="swiper-slide">
-                  <div class="service-card">
-                    <div class="icon-box">
-                      <i class="bi bi-bar-chart-fill"></i>
-                    </div>
-                    <a href="#" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
-                    <div class="content">
-                      <h4><a href="#">Financial Strategy Development</a></h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Cras vehicula magna eget lectus varius, at finibus massa condimentum.</p>
-                      <div class="service-number">01</div>
+                  <div class="swiper-slide">
+                    <div class="service-card">
+                      <div class="icon-box">
+                        <i class="bi bi-trash"></i>
+                      </div>
+                      <a href="{{ route('wastes.index') }}" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
+                      <div class="content">
+                        <h4><a href="{{ route('wastes.index') }}">Waste Collection</a></h4>
+                        <p>Submit your waste for pickup and track collection status. Easy scheduling with real-time updates on waste processing.</p>
+                        <div class="service-number">01</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="swiper-slide">
-                  <div class="service-card">
-                    <div class="icon-box">
-                      <i class="bi bi-graph-up-arrow"></i>
-                    </div>
-                    <a href="#" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
-                    <div class="content">
-                      <h4><a href="#">Market Expansion Advisory</a></h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Cras vehicula magna eget lectus varius, at finibus massa condimentum.</p>
-                      <div class="service-number">02</div>
+                  <div class="swiper-slide">
+                    <div class="service-card">
+                      <div class="icon-box">
+                        <i class="bi bi-shop"></i>
+                      </div>
+                      <a href="{{ route('products.index') }}" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
+                      <div class="content">
+                        <h4><a href="{{ route('products.index') }}">Products Marketplace</a></h4>
+                        <p>Browse and purchase items made from recycled materials. Support circular economy by buying sustainable products.</p>
+                        <div class="service-number">02</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="swiper-slide">
-                  <div class="service-card">
-                    <div class="icon-box">
-                      <i class="bi bi-shield-check"></i>
-                    </div>
-                    <a href="#" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
-                    <div class="content">
-                      <h4><a href="#">Risk Management Solutions</a></h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Cras vehicula magna eget lectus varius, at finibus massa condimentum.</p>
-                      <div class="service-number">03</div>
+                  <div class="swiper-slide">
+                    <div class="service-card">
+                      <div class="icon-box">
+                        <i class="bi bi-trophy"></i>
+                      </div>
+                      <a href="{{ route('challenges.index') }}" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
+                      <div class="content">
+                        <h4><a href="{{ route('challenges.index') }}">Eco Challenges</a></h4>
+                        <p>Participate in sustainability challenges, earn points and badges. Complete missions to make environmental impact.</p>
+                        <div class="service-number">03</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="swiper-slide">
-                  <div class="service-card">
-                    <div class="icon-box">
-                      <i class="bi bi-lightbulb-fill"></i>
-                    </div>
-                    <a href="#" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
-                    <div class="content">
-                      <h4><a href="#">Innovation &amp; Digital Transformation</a></h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Cras vehicula magna eget lectus varius, at finibus massa condimentum.</p>
-                      <div class="service-number">04</div>
+                  <div class="swiper-slide">
+                    <div class="service-card">
+                      <div class="icon-box">
+                        <i class="bi bi-calendar-event"></i>
+                      </div>
+                      <a href="{{ route('events.index') }}" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
+                      <div class="content">
+                        <h4><a href="{{ route('events.index') }}">Community Events</a></h4>
+                        <p>Join cleanup drives, workshops, and community gatherings. Learn about recycling and connect with eco-champions.</p>
+                        <div class="service-number">04</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="swiper-slide">
-                  <div class="service-card">
-                    <div class="icon-box">
-                      <i class="bi bi-people-fill"></i>
-                    </div>
-                    <a href="#" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
-                    <div class="content">
-                      <h4><a href="#">Talent Management Strategy</a></h4>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Cras vehicula magna eget lectus varius, at finibus massa condimentum.</p>
-                      <div class="service-number">05</div>
+                  <div class="swiper-slide">
+                    <div class="service-card">
+                      <div class="icon-box">
+                        <i class="bi bi-geo-alt"></i>
+                      </div>
+                      <a href="{{ route('collection_points.index') }}" class="arrow-link"><i class="bi bi-arrow-right"></i></a>
+                      <div class="content">
+                        <h4><a href="{{ route('collection_points.index') }}">Collection Points</a></h4>
+                        <p>Find nearest waste drop-off locations on interactive map. Convenient access to recycling centers near you.</p>
+                        <div class="service-number">05</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="row">
+          </div>        <div class="row">
           <div class="col-12">
             <div class="swiper-navigation">
               <button class="swiper-nav-prev"><i class="bi bi-chevron-left"></i></button>
@@ -734,69 +732,67 @@
 
     </section><!-- /Featured Services Section -->
 
-    <!-- How We Work Section -->
-    <section id="how-we-work" class="how-we-work section">
+      <!-- How We Work Section -->
+      <section id="how-we-work" class="how-we-work section">
 
-      <!-- Section Title -->
-      <div class="container section-title">
-        <h2>How We Work</h2>
-        <p>We coordinate collection, sorting and recycling operations to convert local waste into useful products.</p>
-      </div><!-- End Section Title -->
+        <!-- Section Title -->
+        <div class="container section-title">
+          <h2>How It Works</h2>
+          <p>Simple steps to turn your waste into valuable resources and contribute to a sustainable future.</p>
+        </div><!-- End Section Title -->
 
-      <div class="container">
+        <div class="container">
 
-        <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-icon">
-              <i class="bi bi-search"></i>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-icon">
+                <i class="bi bi-person-plus"></i>
+              </div>
+              <div class="step-number">Step 1</div>
+              <h3>Sign Up & Register</h3>
+              <p>Create your free account and join our eco-community. Access all platform features including waste submission, marketplace, and challenges.</p>
+              <div class="step-arrow">
+                <i class="bi bi-arrow-right"></i>
+              </div>
             </div>
-            <div class="step-number">Step 1</div>
-            <h3>Research &amp; Planning</h3>
-            <p>Nulla facilisi morbi tempus iaculis urna id. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere.</p>
-            <div class="step-arrow">
-              <i class="bi bi-arrow-right"></i>
+
+            <div class="step-card">
+              <div class="step-icon">
+                <i class="bi bi-trash"></i>
+              </div>
+              <div class="step-number">Step 2</div>
+              <h3>Submit Your Waste</h3>
+              <p>Log your waste materials and schedule a pickup. Our collectors will retrieve items from your specified location at convenient times.</p>
+              <div class="step-arrow">
+                <i class="bi bi-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-icon">
+                <i class="bi bi-recycle"></i>
+              </div>
+              <div class="step-number">Step 3</div>
+              <h3>We Process & Recycle</h3>
+              <p>Collected waste is sorted, cleaned, and processed at our facilities. Materials are transformed into reusable feedstock and products.</p>
+              <div class="step-arrow">
+                <i class="bi bi-arrow-right"></i>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-icon">
+                <i class="bi bi-trophy"></i>
+              </div>
+              <div class="step-number">Step 4</div>
+              <h3>Earn & Shop</h3>
+              <p>Receive points for contributions, complete challenges, and shop for eco-friendly products made from recycled materials.</p>
             </div>
           </div>
 
-          <div class="step-card">
-            <div class="step-icon">
-              <i class="bi bi-lightbulb"></i>
-            </div>
-            <div class="step-number">Step 2</div>
-            <h3>Creative Solutions</h3>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
-            <div class="step-arrow">
-              <i class="bi bi-arrow-right"></i>
-            </div>
-          </div>
-
-          <div class="step-card">
-            <div class="step-icon">
-              <i class="bi bi-gear"></i>
-            </div>
-            <div class="step-number">Step 3</div>
-            <h3>Development</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.</p>
-            <div class="step-arrow">
-              <i class="bi bi-arrow-right"></i>
-            </div>
-          </div>
-
-          <div class="step-card">
-            <div class="step-icon">
-              <i class="bi bi-rocket-takeoff"></i>
-            </div>
-            <div class="step-number">Step 4</div>
-            <h3>Launch &amp; Support</h3>
-            <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque.</p>
-          </div>
         </div>
 
-      </div>
-
-    </section><!-- /How We Work Section -->
-
-    <!-- Features Section -->
+      </section><!-- /How We Work Section -->    <!-- Features Section -->
     <section id="features" class="features section">
 
       <div class="container">
@@ -1727,165 +1723,6 @@
       </div>
 
     </section><!-- /Portfolio Section -->
-
-    <!-- Team Section -->
-    <section id="team" class="team section">
-      <!-- Section Title -->
-      <div class="container section-title">
-        <h2>Team</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
-      </div><!-- End Section Title -->
-
-      <div class="container">
-
-        <div class="team-slider swiper init-swiper">
-          <script type="application/json" class="swiper-config">
-            {
-              "loop": true,
-              "speed": 800,
-              "autoplay": {
-                "delay": 5000
-              },
-              "slidesPerView": 1,
-              "spaceBetween": 30,
-              "pagination": {
-                "el": ".swiper-pagination",
-                "type": "bullets",
-                "clickable": true
-              },
-              "navigation": {
-                "nextEl": ".swiper-button-next",
-                "prevEl": ".swiper-button-prev"
-              },
-              "breakpoints": {
-                "576": {
-                  "slidesPerView": 2
-                },
-                "992": {
-                  "slidesPerView": 3
-                },
-                "1200": {
-                  "slidesPerView": 4
-                }
-              }
-            }
-          </script>
-          <div class="swiper-wrapper">
-
-            <div class="swiper-slide">
-              <div class="team-card">
-                <div class="team-image">
-                  <img src="assets/img/person/person-m-3.webp" class="img-fluid" alt="" loading="lazy">
-                  <div class="team-overlay">
-                    <div class="social-links">
-                      <a href="#"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#"><i class="bi bi-facebook"></i></a>
-                      <a href="#"><i class="bi bi-instagram"></i></a>
-                      <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="team-content">
-                  <h3>Marcus Wilson</h3>
-                  <span>Chief Technology Officer</span>
-                  <p>Our team includes recycling experts, logistics coordinators and product developers focused on sustainable outcomes.</p>
-                </div>
-              </div><!-- End Team Card -->
-            </div><!-- End slide item -->
-
-            <div class="swiper-slide">
-              <div class="team-card">
-                <div class="team-image">
-                  <img src="assets/img/person/person-f-5.webp" class="img-fluid" alt="" loading="lazy">
-                  <div class="team-overlay">
-                    <div class="social-links">
-                      <a href="#"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#"><i class="bi bi-facebook"></i></a>
-                      <a href="#"><i class="bi bi-instagram"></i></a>
-                      <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="team-content">
-                  <h3>Sophia Reynolds</h3>
-                  <span>Product Designer</span>
-                  <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                </div>
-              </div><!-- End Team Card -->
-            </div><!-- End slide item -->
-
-            <div class="swiper-slide">
-              <div class="team-card">
-                <div class="team-image">
-                  <img src="assets/img/person/person-m-8.webp" class="img-fluid" alt="" loading="lazy">
-                  <div class="team-overlay">
-                    <div class="social-links">
-                      <a href="#"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#"><i class="bi bi-facebook"></i></a>
-                      <a href="#"><i class="bi bi-instagram"></i></a>
-                      <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="team-content">
-                  <h3>Daniel Chen</h3>
-                  <span>Marketing Specialist</span>
-                  <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                </div>
-              </div><!-- End Team Card -->
-            </div><!-- End slide item -->
-
-            <div class="swiper-slide">
-              <div class="team-card">
-                <div class="team-image">
-                  <img src="assets/img/person/person-f-9.webp" class="img-fluid" alt="" loading="lazy">
-                  <div class="team-overlay">
-                    <div class="social-links">
-                      <a href="#"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#"><i class="bi bi-facebook"></i></a>
-                      <a href="#"><i class="bi bi-instagram"></i></a>
-                      <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="team-content">
-                  <h3>Olivia Thompson</h3>
-                  <span>Lead Developer</span>
-                  <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
-                </div>
-              </div><!-- End Team Card -->
-            </div><!-- End slide item -->
-
-            <div class="swiper-slide">
-              <div class="team-card">
-                <div class="team-image">
-                  <img src="assets/img/person/person-m-12.webp" class="img-fluid" alt="" loading="lazy">
-                  <div class="team-overlay">
-                    <div class="social-links">
-                      <a href="#"><i class="bi bi-twitter-x"></i></a>
-                      <a href="#"><i class="bi bi-facebook"></i></a>
-                      <a href="#"><i class="bi bi-instagram"></i></a>
-                      <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                  </div>
-                </div>
-                <div class="team-content">
-                  <h3>Jason Parker</h3>
-                  <span>UI/UX Designer</span>
-                  <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni.</p>
-                </div>
-              </div><!-- End Team Card -->
-            </div><!-- End slide item -->
-
-          </div>
-          <div class="swiper-pagination"></div>
-          <div class="swiper-button-prev"></div>
-          <div class="swiper-button-next"></div>
-        </div>
-
-      </div>
-
-    </section><!-- /Team Section -->
 
     <!-- Contact Section -->
     <section id="contact" class="contact section">

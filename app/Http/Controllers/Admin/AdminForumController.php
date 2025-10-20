@@ -7,148 +7,225 @@ use App\Models\Comment;
 use App\Models\Like;
 use App\Models\Notification;
 use App\Models\Post;
-use App\Models\Report;
+use App\Models\PostReport;
 use App\Models\User;
+use App\Models\UserBan;
+use App\Models\Friendship;
+use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminForumController extends Controller
 {
-    /**
-     * Display forum activity dashboard
-     */
-    public function activity()
+    public function index()
     {
         // Overall statistics
-        $postCount = Post::count();
-        $commentCount = Comment::count();
-        $likeCount = Like::count();
-        $reportCount = Report::where('status', 'pending')->count();
-        $userCount = User::count();
-
-        // Activity by day (last 7 days)
-        $postsByDay = Post::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        $commentsByDay = Comment::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        $likesByDay = Like::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
-
-        // Activity by type (pie chart data)
-        $activityTypes = [
-            'Posts' => $postCount,
-            'Comments' => $commentCount,
-            'Likes' => $likeCount,
-            'Reports' => $reportCount,
+        $stats = [
+            'total_users' => User::count(),
+            'total_posts' => Post::count(),
+            'total_comments' => Comment::count(),
+            'total_likes' => Like::count(),
+            'pending_reports' => PostReport::where('status', 'pending')->count(),
+            'active_bans' => User::whereNotNull('banned_until')->where('banned_until', '>', now())->count(),
+            'total_friendships' => Friendship::where('status', 'accepted')->count(),
+            'total_messages' => Message::count(),
         ];
 
+        // Calculate growth rates
+        $stats['users_growth'] = $this->calculateGrowth(User::class);
+        $stats['posts_growth'] = $this->calculateGrowth(Post::class);
+        $stats['comments_growth'] = $this->calculateGrowth(Comment::class);
+
+        // Activity last 7 days
+        $recentActivity = [
+            'new_users' => User::where('created_at', '>=', now()->subDays(7))->count(),
+            'new_posts' => Post::where('created_at', '>=', now()->subDays(7))->count(),
+            'new_comments' => Comment::where('created_at', '>=', now()->subDays(7))->count(),
+            'new_friendships' => Friendship::where('status', 'accepted')->where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        // Activity chart data (last 7 days)
+        $activityChartData = $this->getActivityChartData();
+
         // Most active users
-        $topUsers = User::withCount(['posts', 'comments', 'likes'])
-            ->orderByRaw('posts_count + comments_count + likes_count DESC')
+        $topUsers = User::withCount(['posts', 'comments'])
+            ->orderByDesc('posts_count')
+            ->take(10)
+            ->get();
+
+        // Recent reports
+        $recentReports = PostReport::with(['post.user', 'reporter'])
+            ->where('status', 'pending')
+            ->latest()
             ->take(5)
             ->get();
 
-        return view('admin.forum.activity', compact(
-            'postCount', 'commentCount', 'likeCount', 'reportCount', 'userCount',
-            'postsByDay', 'commentsByDay', 'likesByDay', 'activityTypes', 'topUsers'
+        // Posts by visibility
+        $postsByVisibility = Post::select('visibility', DB::raw('count(*) as count'))
+            ->groupBy('visibility')
+            ->get();
+
+        // Most liked posts
+        $mostLikedPosts = Post::withCount('likes')
+            ->with('user')
+            ->orderByDesc('likes_count')
+            ->take(5)
+            ->get();
+
+        // Most commented posts
+        $mostCommentedPosts = Post::withCount('comments')
+            ->with('user')
+            ->orderByDesc('comments_count')
+            ->take(5)
+            ->get();
+
+        return view('admin.forum.index', compact(
+            'stats', 
+            'recentActivity', 
+            'activityChartData',
+            'topUsers', 
+            'recentReports', 
+            'postsByVisibility',
+            'mostLikedPosts',
+            'mostCommentedPosts'
         ));
     }
 
-    /**
-     * Display reports list
-     */
+    private function calculateGrowth($model)
+    {
+        $currentMonth = $model::whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        
+        $lastMonth = $model::whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->count();
+
+        if ($lastMonth == 0) {
+            return $currentMonth > 0 ? 100 : 0;
+        }
+
+        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
+    }
+
+    private function getActivityChartData()
+    {
+        $data = [
+            'labels' => [],
+            'posts' => [],
+            'comments' => [],
+            'users' => [],
+        ];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $data['labels'][] = $date->format('M d');
+            
+            $data['posts'][] = Post::whereDate('created_at', $date->format('Y-m-d'))->count();
+            $data['comments'][] = Comment::whereDate('created_at', $date->format('Y-m-d'))->count();
+            $data['users'][] = User::whereDate('created_at', $date->format('Y-m-d'))->count();
+        }
+
+        return $data;
+    }
+
     public function reports()
     {
-        $reports = Report::with(['user', 'post.user'])
-            ->orderBy('status')
+        $reports = PostReport::with(['post.user', 'reporter'])
             ->latest()
             ->paginate(20);
 
         return view('admin.forum.reports', compact('reports'));
     }
 
-    /**
-     * Resolve a report
-     */
-    public function resolveReport(Report $report, Request $request)
+    public function resolveReport(PostReport $report, Request $request)
     {
-        $action = $request->input('action'); // 'dismiss' or 'delete_post'
+        $action = $request->input('action');
 
         if ($action === 'delete_post') {
             $report->post->delete();
-            $report->update(['status' => 'resolved', 'admin_action' => 'Post deleted']);
+            $report->update(['status' => 'reviewed']);
         } else {
-            $report->update(['status' => 'dismissed', 'admin_action' => 'Report dismissed']);
+            $report->update(['status' => 'dismissed']);
         }
 
-        return redirect()->route('admin.forum.reports')
-            ->with('success', 'Report handled successfully.');
+        return back()->with('success', 'Report handled successfully.');
     }
 
-    /**
-     * Ban a user
-     */
-    public function banUser(User $user, Request $request)
+    public function banUser(Request $request, $userId)
     {
-        $validated = $request->validate([
-            'duration' => 'required|integer|min:0',
+        $request->validate([
+            'duration' => 'required|integer|min:1',
             'reason' => 'required|string|max:500',
         ]);
 
-        $duration = (int) $validated['duration'];
-        $reason = $validated['reason'];
+        $user = User::findOrFail($userId);
 
-        if ($duration > 0) {
-            $user->banned_until = now()->addDays($duration);
-            $banMessage = "You have been banned for {$duration} days. Reason: {$reason}";
-        } else {
-            $user->banned_until = now()->addYears(100); // Permanent ban
-            $banMessage = "You have been permanently banned. Reason: {$reason}";
+        if ($user->isAdmin()) {
+            return back()->with('error', 'Cannot ban admin users.');
         }
 
-        $user->ban_reason = $reason;
-        $user->save();
+        $bannedUntil = now()->addDays($request->duration);
 
-        // Create ban notification
+        UserBan::create([
+            'user_id' => $user->id,
+            'banned_by' => Auth::id(),
+            'reason' => $request->reason,
+            'banned_until' => $bannedUntil,
+        ]);
+
+        // Create notification
         Notification::create([
             'user_id' => $user->id,
             'type' => 'ban',
-            'message' => $banMessage,
-            'related_id' => null,
-            'is_read' => false,
+            'data' => json_encode([
+                'reason' => $request->reason,
+                'duration' => $request->duration,
+                'banned_until' => $bannedUntil->format('Y-m-d H:i:s'),
+                'message' => "You have been banned for {$request->duration} days. Reason: {$request->reason}",
+            ]),
         ]);
 
-        return redirect()->back()->with('success', 'User banned successfully.');
+        return back()->with('success', 'User banned successfully.');
     }
 
-    /**
-     * Unban a user
-     */
-    public function unbanUser(User $user)
+    public function unbanUser($userId)
     {
-        $user->banned_until = null;
-        $user->ban_reason = null;
-        $user->save();
+        $user = User::findOrFail($userId);
+        
+        // Remove all active bans (temporary and permanent)
+        UserBan::where('user_id', $user->id)->delete();
 
-        // Create unban notification
+        // Clear the banned_until field in users table
+        $user->update([
+            'banned_until' => null,
+            'ban_reason' => null
+        ]);
+
+        // Create notification
         Notification::create([
             'user_id' => $user->id,
             'type' => 'unban',
-            'message' => 'Your account has been unbanned. You can now participate in the forum again.',
-            'related_id' => null,
-            'is_read' => false,
+            'data' => json_encode([
+                'message' => 'Your ban has been lifted. You can now access the platform again.',
+                'unbanned_at' => now()->toDateTimeString(),
+            ]),
         ]);
 
-        return redirect()->back()->with('success', 'User unbanned successfully.');
+        return back()->with('success', 'User unbanned successfully.');
+    }
+
+    public function bannedUsers()
+    {
+        $bannedUsers = UserBan::with(['user', 'bannedBy'])
+            ->where(function($query) {
+                $query->whereNull('banned_until') // Permanent bans
+                      ->orWhere('banned_until', '>', now()); // Active temporary bans
+            })
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.forum.banned', compact('bannedUsers'));
     }
 }

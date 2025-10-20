@@ -23,7 +23,6 @@ class Event extends Model
 
     protected $casts = [
         'event_date' => 'date',
-        'event_time' => 'datetime:H:i:s',
         'max_participants' => 'integer',
     ];
 
@@ -32,7 +31,17 @@ class Event extends Model
      */
     public function getEventDateTimeAttribute()
     {
-        return $this->event_date->format('Y-m-d').' '.$this->event_time;
+        // Combine date and time without timezone conversion
+        return \Carbon\Carbon::parse($this->event_date->format('Y-m-d') . ' ' . $this->event_time);
+    }
+    
+    /**
+     * Get the event date with time for datetime-local input
+     */
+    public function getEventDateTimeLocalAttribute()
+    {
+        // Return the exact date and time without timezone conversion
+        return $this->event_date->format('Y-m-d') . 'T' . substr($this->event_time, 0, 5);
     }
 
     /**
